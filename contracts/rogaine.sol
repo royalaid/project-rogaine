@@ -15,10 +15,10 @@ contract Rogaine is ERC1155, Ownable {
     mapping(uint256 => uint256) public tokenSupply;
     mapping(uint256 => string) public _tokenURIs;
 
-    event MemeCreated(uint256 indexed tokenID, address creator);
-    event MemePurchased(uint256 indexed tokenID, address buyer, uint256 amount, uint256 memeCoinsBought);
+    event MemeCreated(uint256 tokenID, address creator);
+    event MemePurchased(uint256 tokenID, address buyer, uint256 amount, uint256 memeCoinsBought);
 
-    constructor(address _aerodromeRouter, address _memeCoinAddress) ERC1155("https://myapi.com/api/token/{id}.json") Ownable(msg.sender) {
+    constructor(address _aerodromeRouter, address _memeCoinAddress) ERC1155("if you are here you are early") Ownable(msg.sender) {
         aerodromeRouter = IAero(_aerodromeRouter);
         memeCoinAddress = _memeCoinAddress;
         defaultFactory = aerodromeRouter.defaultFactory();
@@ -70,11 +70,11 @@ contract Rogaine is ERC1155, Ownable {
     function _swapETHForMemeCoins(uint256 ethAmount, address to) internal returns (uint256) {
         IAero.Route[] memory route = new IAero.Route[](1);
         route[0] = IAero.Route({
-            from: aerodromeRouter.ETHER(),
+            from: 0x4200000000000000000000000000000000000006,
             to: memeCoinAddress,
             factory: defaultFactory
         });
-        uint256[] memory amounts = aerodromeRouter.swapExactETHForTokens{value: ethAmount}(0, route, to, block.timestamp + 1 hours);
-        return amounts[1]; // Return the amount of meme coins bought
+        uint256[] memory amounts = aerodromeRouter.swapExactETHForTokens{value: ethAmount}(0, route, to, block.timestamp + 5 hours);
+        return 0;
     }
 }
