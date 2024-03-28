@@ -18,10 +18,11 @@ contract Rogaine is ERC1155, Ownable {
     event MemeCreated(uint256 tokenID, address creator);
     event MemePurchased(uint256 tokenID, address buyer, uint256 amount, uint256 memeCoinsBought);
 
-    constructor(address _aerodromeRouter, address _memeCoinAddress) ERC1155("if you are here you are early") Ownable(msg.sender) {
+    constructor(address _aerodromeRouter, address _memeCoinAddress, address _creator) ERC1155("if you are here you are early") Ownable(msg.sender) {
         aerodromeRouter = IAero(_aerodromeRouter);
         memeCoinAddress = _memeCoinAddress;
         defaultFactory = aerodromeRouter.defaultFactory();
+        creator = _creator;
     }
     
     // Override the uri function to return custom token URIs
@@ -33,24 +34,33 @@ contract Rogaine is ERC1155, Ownable {
     }
 
     function createMeme(string memory ipfsImageHash) public payable returns (uint256) {
-        require(msg.value >= 0.01 ether, "Minimum 0.01 ETH required to create meme coins");
+        uint256 creatorFee = 0.000777 ether;
+        require(msg.value >= 0.05 ether, "Minimum 0.05 ETH required to create memes");
         uint256 newTokenID = _getNextTokenID();
         _incrementTokenTypeId();
         creators[newTokenID] = msg.sender;
 
-        // Swap ETH for MemeCoins
-        _swapETHForMemeCoins(msg.value, msg.sender);
+        // Swap ETH for MemeCoins, excluding the creator fee
+        uint256 amountForSwap = msg.value - creatorFee;
+        _swapETHForMemeCoins(amountForSwap, msg.sender);
 
         _tokenURIs[newTokenID] = ipfsImageHash; // Set the IPFS image hash as the token URI for the new token ID
-        _mint(msg.sender, newTokenID, 1, ""); // Mint one meme NFT for the creator
+        payable(creator).transfer(creatorFee); // Transfer the creator fee
+        _mint(msg.sender, newTokenID, 1, ""); // Mint one meme NFT for the meme creator
         emit MemeCreated(newTokenID, msg.sender);
 
         return newTokenID;
     }
 
     function buyMeme(uint256 tokenID) public payable {
-        require(msg.value > 0, "ETH required to buy meme coins");
+        require(msg.value > 0.01 ether, "ETH required to buy meme coins");
         require(creators[tokenID] != address(0), "Meme does not exist");
+
+        uint256 creatorShare = 0.000111 ether;
+        uint256 creatorTokenShare = 0.000777 ether;
+
+        payable(creator).transfer(creatorShare);
+        payable(creators[tokenID]).transfer(creatorTokenShare);
 
         // Swap ETH for MemeCoins
         uint256 memeCoinsBought = _swapETHForMemeCoins(msg.value, msg.sender);
@@ -67,7 +77,7 @@ contract Rogaine is ERC1155, Ownable {
         _currentTokenID++;
     }
 
-    function _swapETHForMemeCoins(uint256 ethAmount, address to) internal returns (uint256) {
+    function _swapETHForMemeCoins(uint256 ethAmount, address to, uint256 minTokens) internal returns (uint256) {
         IAero.Route[] memory route = new IAero.Route[](1);
         route[0] = IAero.Route({
             from: 0x4200000000000000000000000000000000000006,
@@ -75,7 +85,7 @@ contract Rogaine is ERC1155, Ownable {
             stable: false,
             factory: defaultFactory
         });
-        uint256[] memory amounts = aerodromeRouter.swapExactETHForTokens{value: ethAmount}(0, route, to, block.timestamp + 5 hours);
+        uint256[] memory amounts = aerodromeRouter.swapExactETHForTokens{value: ethAmount}(minTokens, route, to, block.timestamp + 5 hours);
         return amounts[0];
     }
 }
