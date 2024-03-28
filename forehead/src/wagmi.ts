@@ -1,5 +1,5 @@
 import { http, createConfig } from 'wagmi'
-import {base, mainnet, sepolia} from 'wagmi/chains'
+import {base } from 'wagmi/chains'
 import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors'
 
 declare module 'wagmi' {
