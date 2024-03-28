@@ -76,6 +76,6 @@ contract Rogaine is ERC1155, Ownable {
             factory: defaultFactory
         });
         uint256[] memory amounts = aerodromeRouter.swapExactETHForTokens{value: ethAmount}(0, route, to, block.timestamp + 5 hours);
-        return 0;
+        return amounts[0];
     }
 }
