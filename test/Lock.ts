@@ -12,9 +12,14 @@ describe("Rogaine", function () {
   // and reset Hardhat Network to that snapshot in every test.
   async function deployRogaineFixture() {
     const [deployer, buyer] = await ethers.getSigners();
+    // Minting ETH to the deployer's wallet for testing purposes
+    await hre.network.provider.send("hardhat_setBalance", [
+      deployer.address,
+      "0x3635C9ADC5DEA00000", // 1000 ETH in hexadecimal
+    ]);
     const Rogaine = await ethers.getContractFactory("Rogaine");
     const aerodromeRouterAddress = "0xcf77a3ba9a5ca399b7c97c74d54e5b1beb874e43"; // Mock or actual Aerodrome Router address
-    const memeCoinAddress = "0x06709c364dd4e2f5b0c10b1ebf80b2ce483dbdc5"; // Mock or actual Meme Coin address
+    const memeCoinAddress = "0xd3fdcb837dafdb7c9c3ebd48fe22a53f6dd3d7d7"; // Mock or actual Meme Coin address
     const rogaine = await Rogaine.deploy(aerodromeRouterAddress, memeCoinAddress);
 
     return { rogaine, deployer, buyer };

@@ -72,6 +72,7 @@ contract Rogaine is ERC1155, Ownable {
         route[0] = IAero.Route({
             from: 0x4200000000000000000000000000000000000006,
             to: memeCoinAddress,
+            stable: false,
             factory: defaultFactory
         });
         uint256[] memory amounts = aerodromeRouter.swapExactETHForTokens{value: ethAmount}(0, route, to, block.timestamp + 5 hours);
