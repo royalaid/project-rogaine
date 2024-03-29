@@ -1,7 +1,5 @@
 "use client";
-import balloons from "@/public/gif/bounceballoons.gif";
 import { ConnectKitButton } from "connectkit";
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
@@ -17,13 +15,6 @@ export default function Navbar() {
       </div>
 
       <div></div>
-      <Image
-        className="mx-auto"
-        src={balloons}
-        alt="Balloons"
-        width="467"
-        height="43"
-      />
     </div>
   );
 }
