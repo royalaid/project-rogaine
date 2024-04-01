@@ -20,7 +20,8 @@ describe("Rogaine", function () {
     const Rogaine = await ethers.getContractFactory("Rogaine");
     const aerodromeRouterAddress = "0xcf77a3ba9a5ca399b7c97c74d54e5b1beb874e43"; // Mock or actual Aerodrome Router address
     const memeCoinAddress = "0xd3fdcb837dafdb7c9c3ebd48fe22a53f6dd3d7d7"; // Mock or actual Meme Coin address
-    const rogaine = await Rogaine.deploy(aerodromeRouterAddress, memeCoinAddress);
+    //const memeCoinAddress = "0xd3fdcb837dafdb7c9c3ebd48fe22a53f6dd3d7d7"; // $wowowow
+    const rogaine = await Rogaine.deploy(aerodromeRouterAddress, memeCoinAddress, deployer.address);
 
     return { rogaine, deployer, buyer };
   }
@@ -32,7 +33,7 @@ describe("Rogaine", function () {
       const numberOfMemes = 3;
       const createTxPromises = [];
       for (let i = 0; i < numberOfMemes; i++) {
-        createTxPromises.push(rogaine.createMeme(`ipfs://example${i}`, { value: ethers.parseEther("0.01") }));
+        createTxPromises.push(rogaine.createMeme(`ipfs://example${i}`,0, { value: ethers.parseEther("0.05") }));
       }
       const createTxs = await Promise.all(createTxPromises);
 
@@ -50,12 +51,12 @@ describe("Rogaine", function () {
       // First, create 10 memes to buy
       const numberOfMemes = 3;
       for (let i = 0; i < numberOfMemes; i++) {
-        await rogaine.createMeme(`ipfs://example${i}`, { value: ethers.parseEther("0.01") });
+        await rogaine.createMeme(`ipfs://example${i}`,0, { value: ethers.parseEther("0.05") });
       }
       // Attempt to buy the created memes
       const buyTxPromises = [];
       for (let i = 0; i < numberOfMemes; i++) {
-        buyTxPromises.push(rogaine.buyMeme(i + 1, { value: ethers.parseEther("0.01") }));
+        buyTxPromises.push(rogaine.buyMeme(i + 1,0, { value: ethers.parseEther("0.01") }));
       }
       const buyTxs = await Promise.all(buyTxPromises);
 
@@ -71,7 +72,7 @@ describe("Rogaine", function () {
       // Create 10 memes to verify their token URIs
       const numberOfMemes = 3;
       for (let i = 0; i < numberOfMemes; i++) {
-        await rogaine.createMeme(`ipfs://example${i}`, { value: ethers.parseEther("0.01") });
+        await rogaine.createMeme(`ipfs://example${i}`,0, { value: ethers.parseEther("0.05") });
       }
       for (let i = 0; i < numberOfMemes; i++) {
         await expect(rogaine.uri(i + 1))
