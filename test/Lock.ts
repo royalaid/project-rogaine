@@ -17,13 +17,16 @@ describe("Rogaine", function () {
       deployer.address,
       "0x3635C9ADC5DEA00000", // 1000 ETH in hexadecimal
     ]);
-    const Rogaine = await ethers.getContractFactory("Rogaine");
-    const aerodromeRouterAddress = "0xcf77a3ba9a5ca399b7c97c74d54e5b1beb874e43"; // Mock or actual Aerodrome Router address
-    const memeCoinAddress = "0xd3fdcb837dafdb7c9c3ebd48fe22a53f6dd3d7d7"; // Mock or actual Meme Coin address
-    //const memeCoinAddress = "0xd3fdcb837dafdb7c9c3ebd48fe22a53f6dd3d7d7"; // $wowowow
-    const rogaine = await Rogaine.deploy(aerodromeRouterAddress, memeCoinAddress, deployer.address);
+    const AeroRogaineFactory = await ethers.getContractFactory("AerogaineFactory");
+    const aerodromeRouterAddress = "0xcf77a3ba9a5ca399b7c97c74d54e5b1beb874e43"; // Aerodrome Router address
+    const memeCoinAddress = "0xd3fdcb837dafdb7c9c3ebd48fe22a53f6dd3d7d7"; // Qi
+    const factory = await AeroRogaineFactory.deploy();
+    await factory.createRogaine(memeCoinAddress);
+    const deployedRogaines = await factory.getDeployedRogaines();
+    const rogaineAddress = deployedRogaines[0];
+    const rogaine = await ethers.getContractAt("Rogaine", rogaineAddress);
 
-    return { rogaine, deployer, buyer };
+    return { rogaine, factory, deployer, buyer };
   }
 
   describe("Meme Creation, Purchase, and Token URI Verification", function () {
@@ -70,13 +73,13 @@ describe("Rogaine", function () {
 
       const { rogaine, deployer } = await loadFixture(deployRogaineFixture);
       // Create 10 memes to verify their token URIs
-      const numberOfMemes = 3;
+      const numberOfMemes = 20;
       for (let i = 0; i < numberOfMemes; i++) {
         await rogaine.createMeme(`ipfs://example${i}`,0, { value: ethers.parseEther("0.05") });
       }
       for (let i = 0; i < numberOfMemes; i++) {
         await expect(rogaine.uri(i + 1))
-          .to.eventually.equal(`ipfs://example${i}`, `The token URI of the created meme ${i + 1} does not match the expected value.`);
+        .to.eventually.equal(`ipfs://example${i}`, `The token URI of the created meme ${i + 1} does not match the expected value.`);
       }
     });
   });

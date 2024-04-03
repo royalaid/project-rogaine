@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Your Meme - 90s NFT Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  Create Your Meme - 90s NFT Marketplace
+</header>
+<div class="container">
+  <div class="create-meme-section">
+    <h2>Drag and Drop Your Meme</h2>
+    <div class="drag-drop-area">
+      <p>Drag your image here or click to upload</p>
+      <input type="file" accept="image/*" hidden>
+    </div>
+    <textarea placeholder="Enter your meme's comment here..." rows="4"></textarea>
+    <div class="token-support-section">
+      <p>Supporting Token: <span>ETH</span></p>
+      <p>Minimum Creation Fee: <span>0.05 ETH</span></p>
+    </div>
+    <button class="create-button">Create Meme</button>
+  </div>
+</div>
+<footer class="footer-style">
+  <p>All memes uniquely created by various artists</p>
+</footer>
+<script>
+  const dragDropArea = document.querySelector('.drag-drop-area');
+  dragDropArea.addEventListener('click', () => {
+    dragDropArea.nextElementSibling.click();
+  });
+  dragDropArea.nextElementSibling.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        dragDropArea.innerHTML = '';
+        dragDropArea.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>
+</body>
+</html>

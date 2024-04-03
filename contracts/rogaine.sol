@@ -4,11 +4,16 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IAERO.sol";
 
+interface IERC20 {
+    function name() external view returns (string memory);
+}
+
 contract Rogaine is ERC1155, Ownable {
 
     IAero public aerodromeRouter;
     address public defaultFactory;
     address public creator;
+    string public name;
 
     address public memeCoinAddress;
     uint256 private _currentTokenID = 0;
@@ -24,13 +29,57 @@ contract Rogaine is ERC1155, Ownable {
         memeCoinAddress = _memeCoinAddress;
         defaultFactory = aerodromeRouter.defaultFactory();
         creator = _creator;
+        name = IERC20(memeCoinAddress).name();
     }
-    
-    // Override the uri function to return custom token URIs
+
+
+    // Helper function to convert address to string
+    function toHexString(address account) internal pure returns (string memory) {
+        return toHexString(uint256(uint160(account)), 20);
+    }
+
+    function toHexString(uint256 value, uint256 length) internal pure returns (string memory) {
+        bytes memory buffer = new bytes(2 * length + 2);
+        buffer[0] = "0";
+        buffer[1] = "x";
+        bytes memory characters = "0123456789abcdef";
+        for (uint256 i = 2 * length + 1; i > 1; --i) {
+            buffer[i] = characters[value & 0xf];
+            value >>= 4;
+        }
+        require(value == 0, "Strings: hex length insufficient");
+        return string(buffer);
+    }
+
+    function uint256ToString(uint256 value) internal pure returns (string memory) {
+        // Base case: 0
+        if (value == 0) {
+            return "0";
+        }
+        // Temp variable for calculation
+        uint256 temp = value;
+        // Calculate the length of the number
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        // Allocate memory for the string
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + value % 10));
+            value /= 10;
+        }
+        return string(buffer);
+    }
+
+    // Override the uri function to return custom token URIs in JSON format
     function uri(uint256 tokenID) public view override returns (string memory) {
         if(bytes(_tokenURIs[tokenID]).length > 0) {
-            return _tokenURIs[tokenID];
+            return string(abi.encodePacked("https://regen.lol/api/meme/", toHexString(address(this)), "/", uint256ToString(tokenID), ".json"));
         }
+        else
         return super.uri(tokenID); // Fallback to the default URI
     }
 
