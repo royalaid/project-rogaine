@@ -1,9 +1,11 @@
 "use client";
 
+import "./globals.css";
+import "./Home.module.css";
+import "./style.css";
+
 import React from "react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
-import Image from "next/image";
-import balloons from "@/public/gif/bounceballoons.gif";
 
 function App() {
   const account = useAccount();
@@ -11,94 +13,89 @@ function App() {
   const { disconnect } = useDisconnect();
 
   return (
-    <div style={{ background: 'lime', fontFamily: 'Comic Sans MS', color: 'magenta', padding: '20px' }}>
-      <Image
-        className="mx-auto"
-        src={balloons}
-        alt="Balloons"
-        width="467"
-        height="43"
-      />
-      <marquee><h1 style={{ fontSize: '40px', fontWeight: 'bold', textDecoration: 'underline blink' }}>Welcome to My Account Page!</h1></marquee>
+    <>
+      <div className="container">
+        <section className="hero-section">
+          <h1>Revive the 90s in Digital Form</h1>
+          <p>
+            Join us in celebrating the golden era of memes with our exclusive
+            NFT marketplace. Dive into nostalgia and own a piece of digital
+            history.
+          </p>
+          <img src="https://place-hold.it/600x300.png" alt="90s Nostalgia" />
+        </section>
 
-      <table border="1" cellpadding="5" cellspacing="0" style={{ margin: 'auto', background: 'cyan' }}>
-        <tr>
-          <td>Status:</td>
-          <td>{account.status}</td>
-        </tr>
-        <tr>
-          <td>Addresses:</td>
-          <td>{JSON.stringify(account.addresses)}</td>
-        </tr>
-        <tr>
-          <td>Chain ID:</td>
-          <td>{account.chainId}</td>
-        </tr>
-      </table>
+        <section className="about-section">
+          <h2>What We Offer</h2>
+          <p>
+            Our marketplace is a hub for creators and collectors alike, offering
+            a platform to mint, buy, and trade NFTs that encapsulate the essence
+            of the 90s.
+          </p>
+          <div className="about-images">
+            <img src="https://place-hold.it/200x200.png" alt="Create NFT" />
+            <img src="https://place-hold.it/200x200.png" alt="Buy NFT" />
+            <img src="https://place-hold.it/200x200.png" alt="Trade NFT" />
+          </div>
+        </section>
 
-      {account.status === "connected" && (
-        <center>
-          <button style={{ marginTop: '20px', background: 'yellow', fontSize: '20px', cursor: 'pointer' }} onClick={() => disconnect()}>
-            Disconnect
-          </button>
-        </center>
-      )}
+        <section className="how-it-works-section">
+          <h2>How It Works</h2>
+          <p>
+            Jumping into our marketplace is straightforward. Just connect your
+            wallet to start exploring the vibrant world of 90s NFTs.
+          </p>
+          <ol>
+            <li>Connect your wallet to get started.</li>
+            <li>Add to your collection, create a meme, or mint a meme.</li>
+            <li>
+              Support your favorite meme coin by minting or purchasing NFTs.
+            </li>
+          </ol>
+          <img src="https://place-hold.it/400x200.png" alt="How It Works" />
+        </section>
 
-      <div style={{ marginTop: '30px', textAlign: 'center' }}>
-        <div style={{ marginTop: '10px' }}>{status}</div>
-        <div style={{ color: 'blue' }}>{error?.message}</div>
+        <section className="featured-nfts-section">
+          <h2>Featured NFTs</h2>
+          <div className="nft-gallery">
+            <div className="nft-item">
+              <img
+                src="https://place-hold.it/200x200.png"
+                alt="Featured Meme 1"
+              />
+              <p>Featured Meme 1</p>
+              <button className="buy-button">Buy Now</button>
+            </div>
+            <div className="nft-item">
+              <img
+                src="https://place-hold.it/200x200.png"
+                alt="Featured Meme 2"
+              />
+              <p>Featured Meme 2</p>
+              <button className="buy-button">Buy Now</button>
+            </div>
+            <div className="nft-item">
+              <img
+                src="https://place-hold.it/200x200.png"
+                alt="Featured Meme 3"
+              />
+              <p>Featured Meme 3</p>
+              <button className="buy-button">Buy Now</button>
+            </div>
+            <div className="create-your-own">
+              <button className="create-button">Create Your Own</button>
+            </div>
+          </div>
+        </section>
+
+        <footer className="footer-style">
+          <p>
+            Join us in preserving the spirit of the 90s through digital art.
+            Every meme minted supports the creator and the meme's legacy.
+          </p>
+        </footer>
       </div>
-
-    <div style={{ marginTop: '50px', textAlign: 'center', fontFamily: 'Courier New', background: 'pink', padding: '20px' }}>
-      <h2 style={{ textDecoration: 'blink' }}>Memes for Sale!</h2>
-      <table border="2" cellpadding="5" cellspacing="3" style={{ margin: 'auto', background: 'lightyellow' }}>
-        <tr>
-          <th>Image</th>
-          <th>Action</th>
-        </tr>
-        <tr>
-          <td>
-            <Image
-              src="https://place-hold.it/200x200.png"
-              alt="Funny Meme"
-              width="200"
-              height="200"
-            />
-          </td>
-          <td>
-            <button style={{ background: 'lightgreen', cursor: 'pointer' }}>Buy Now</button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <Image
-              src="https://place-hold.it/200x200.png"
-              alt="Hilarious Meme"
-              width="200"
-              height="200"
-            />
-          </td>
-          <td>
-            <button style={{ background: 'lightgreen', cursor: 'pointer' }}>Buy Now</button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <Image
-              src="https://place-hold.it/200x200.png"
-              alt="LOL Meme"
-              width="200"
-              height="200"
-            />
-          </td>
-          <td>
-            <button style={{ background: 'lightgreen', cursor: 'pointer' }}>Buy Now</button>
-          </td>
-        </tr>
-      </table>
-      <p style={{ marginTop: '20px' }}>All memes created by <span style={{ fontWeight: 'bold' }}>0x1234</span></p>
-    </div>
-    </div>
+    </>
   );
 }
 

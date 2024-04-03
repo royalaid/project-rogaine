@@ -1,11 +1,7 @@
-import "./globals.css";
 import Navbar from "@/app/Navbar";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import React, { type ReactNode } from "react";
-import Image from "next/image";
-
-import background from "@/public/gif/bg.gif";
 
 import { Providers } from "./providers";
 
@@ -20,7 +16,6 @@ export default function RootLayout(props: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-      <div style={{ backgroundImage: `url(${background.src})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundPosition: 'top left', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: -1 }}></div>
         <Providers>
           <div>
             <Navbar />
