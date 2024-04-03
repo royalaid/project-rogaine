@@ -1,19 +1,36 @@
-"use client";
-
 import "./globals.css";
 import "./Home.module.css";
 import "./style.css";
-
+import { getFrameMetadata } from "frog/next";
+import type { Metadata } from "next";
 import React from "react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const frameTags = await getFrameMetadata(
+    `${process.env.VERCEL_URL || "http://localhost:3000"}/api`,
+  );
+  return {
+    other: frameTags,
+  };
+}
 
 function App() {
-  const account = useAccount();
-  const { status, error, connect } = useConnect();
-  const { disconnect } = useDisconnect();
+  // const account = useAccount();
+  // const { status, error, connect } = useConnect();
+  // const { disconnect } = useDisconnect();
 
   return (
     <>
+      <p>
+        Head to{" "}
+        <a
+          href="/api/dev"
+          style={{ display: "inline", fontWeight: "semibold" }}
+        >
+          <code>localhost:3000/api</code>
+        </a>{" "}
+        for your frame endpoint.
+      </p>
       <div className="container">
         <section className="hero-section">
           <h1>Revive the 90s in Digital Form</h1>
