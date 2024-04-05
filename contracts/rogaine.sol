@@ -110,7 +110,6 @@ contract Rogaine is ERC1155, Ownable {
         uint256 creatorTokenShare = 0.000777 ether;
 
         uint256 totalCreatorShare = creatorShare + creatorTokenShare;
-        require(msg.value > totalCreatorShare, "Not enough ETH to cover creator shares and swap");
 
         payable(creator).transfer(creatorShare);
         payable(creators[tokenID]).transfer(creatorTokenShare);
