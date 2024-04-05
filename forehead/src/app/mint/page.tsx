@@ -1,6 +1,6 @@
 function Mint() {
   return (
-    <div>
+    <div className="container">
       <h1>Mint</h1>
     </div>
   );

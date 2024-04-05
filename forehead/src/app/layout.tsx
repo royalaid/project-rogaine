@@ -1,4 +1,5 @@
 import Navbar from "@/app/Navbar";
+import bgStars from "@/public/gif/background-stars.gif";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import React, { type ReactNode } from "react";
@@ -15,7 +16,13 @@ export const metadata: Metadata = {
 export default function RootLayout(props: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body
+        className={inter.className}
+        style={{
+          backgroundImage: `url(${bgStars.src})`,
+          backgroundRepeat: "repeat",
+        }}
+      >
         <Providers>
           <div>
             <Navbar />

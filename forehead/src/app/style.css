@@ -1,11 +1,8 @@
   body {
-    background-color: #008080;
     font-family: 'Roboto', sans-serif;
     color: #ffd700;
     margin: 0;
     padding: 0;
-    background-image: url('https://web.archive.org/web/20090730183051/http://hk.geocities.com/chaukaiwang/background.gif'); /* Cool tiled background */
-    background-repeat: repeat; /* Ensures the background tiles */
   }
   p {
     display: block;
@@ -30,7 +27,7 @@
   }
   .container {
     max-width: 95%;
-    width: 650px; /* Adjusted for a thinner layout */
+    width: 600px; /* Adjusted for a thinner layout */
     margin: 20px auto;
     border: 3px dashed #ffd700;
     padding: 10px;
@@ -79,6 +76,7 @@
   }
   .interactive-section-button, .buy-button, .create-button {
     background-color: #00ff00;
+    color: black;
     border: none;
     padding: 10px 20px;
     cursor: pointer;

@@ -3,7 +3,7 @@ import "./Home.module.css";
 import "./style.css";
 import { getFrameMetadata } from "frog/next";
 import type { Metadata } from "next";
-import React from "react";
+import React, { ReactNode } from "react";
 
 export async function generateMetadata(): Promise<Metadata> {
   const frameTags = await getFrameMetadata(
@@ -12,6 +12,30 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     other: frameTags,
   };
+}
+
+function Title(props: { children: ReactNode }) {
+  return <h1 className="px-3 pt-3 text-3xl font-bold">{props.children}</h1>;
+}
+
+interface HeadingProps {
+  children: ReactNode;
+  className?: string;
+}
+const Heading: React.FC<HeadingProps> = ({ children, className }) => {
+  return (
+    <h2
+      className={`px-3 pt-3 text-2xl font-bold ${className ? className : ""}`}
+    >
+      {children}
+    </h2>
+  );
+};
+
+function NumberedList(props: { children: ReactNode }) {
+  return (
+    <ol className="list-inside list-decimal text-left">{props.children}</ol>
+  );
 }
 
 function App() {
@@ -33,7 +57,7 @@ function App() {
       </p>
       <div className="container">
         <section className="hero-section">
-          <h1>Revive the 90s in Digital Form</h1>
+          <Title>Revive the 90s in Digital Form</Title>
           <p>
             Join us in celebrating the golden era of memes with our exclusive
             NFT marketplace. Dive into nostalgia and own a piece of digital
@@ -43,7 +67,7 @@ function App() {
         </section>
 
         <section className="about-section">
-          <h2>What We Offer</h2>
+          <Heading>What We Offer</Heading>
           <p>
             Our marketplace is a hub for creators and collectors alike, offering
             a platform to mint, buy, and trade NFTs that encapsulate the essence
@@ -56,24 +80,29 @@ function App() {
           </div>
         </section>
 
-        <section className="how-it-works-section">
-          <h2>How It Works</h2>
+        <section className="how-it-works-section flex flex-col text-center">
+          <Heading>How It Works</Heading>
           <p>
             Jumping into our marketplace is straightforward. Just connect your
             wallet to start exploring the vibrant world of 90s NFTs.
           </p>
-          <ol>
+
+          <NumberedList>
             <li>Connect your wallet to get started.</li>
             <li>Add to your collection, create a meme, or mint a meme.</li>
             <li>
               Support your favorite meme coin by minting or purchasing NFTs.
             </li>
-          </ol>
-          <img src="https://place-hold.it/400x200.png" alt="How It Works" />
+          </NumberedList>
+          <img
+            className="mx-auto h-fit w-fit"
+            src="https://place-hold.it/400x200.png"
+            alt="How It Works"
+          />
         </section>
 
         <section className="featured-nfts-section">
-          <h2>Featured NFTs</h2>
+          <Heading className="pb-3">Featured NFTs</Heading>
           <div className="nft-gallery">
             <div className="nft-item">
               <img
