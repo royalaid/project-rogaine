@@ -36,7 +36,7 @@ describe("Rogaine", function () {
       const numberOfMemes = 3;
       const createTxPromises = [];
       for (let i = 0; i < numberOfMemes; i++) {
-        createTxPromises.push(rogaine.createMeme(`ipfs://example${i}`,0, { value: ethers.parseEther("0.05") }));
+        createTxPromises.push(rogaine.createMeme(`ipfs://example${i}`,0, { value: ethers.parseEther("0.01") }));
       }
       const createTxs = await Promise.all(createTxPromises);
 
@@ -54,7 +54,7 @@ describe("Rogaine", function () {
       // First, create 10 memes to buy
       const numberOfMemes = 3;
       for (let i = 0; i < numberOfMemes; i++) {
-        await rogaine.createMeme(`ipfs://example${i}`,0, { value: ethers.parseEther("0.05") });
+        await rogaine.createMeme(`ipfs://example${i}`,0, { value: ethers.parseEther("0.01") });
       }
       // Attempt to buy the created memes
       const buyTxPromises = [];
