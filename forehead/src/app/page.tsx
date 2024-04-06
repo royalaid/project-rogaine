@@ -1,9 +1,10 @@
+import { getFrameMetadata } from "frog/next";
+import type { Metadata } from "next";
+import React from "react";
+import { Heading, NumberedList, Title } from "./components/text";
 import "./globals.css";
 import "./Home.module.css";
 import "./style.css";
-import { getFrameMetadata } from "frog/next";
-import type { Metadata } from "next";
-import React, { ReactNode } from "react";
 
 export async function generateMetadata(): Promise<Metadata> {
   const frameTags = await getFrameMetadata(
@@ -12,30 +13,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     other: frameTags,
   };
-}
-
-function Title(props: { children: ReactNode }) {
-  return <h1 className="px-3 pt-3 text-3xl font-bold">{props.children}</h1>;
-}
-
-interface HeadingProps {
-  children: ReactNode;
-  className?: string;
-}
-const Heading: React.FC<HeadingProps> = ({ children, className }) => {
-  return (
-    <h2
-      className={`px-3 pt-3 text-2xl font-bold ${className ? className : ""}`}
-    >
-      {children}
-    </h2>
-  );
-};
-
-function NumberedList(props: { children: ReactNode }) {
-  return (
-    <ol className="list-inside list-decimal text-left">{props.children}</ol>
-  );
 }
 
 function App() {
