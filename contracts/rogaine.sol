@@ -24,6 +24,7 @@ contract Rogaine is ERC1155, Ownable {
     mapping(uint256 => string) public _tokenURIs;
 
     mapping(address => bool) public allowListed;
+    bool allowlisting = false;
 
     event MemeCreated(uint256 tokenID, address creator);
     event MemePurchased(uint256 tokenID, address buyer, uint256 amount, uint256 memeCoinsBought);
@@ -53,8 +54,12 @@ contract Rogaine is ERC1155, Ownable {
         return super.uri(tokenID); // Fallback to the default URI
     }
 
+    function setAllowListing(bool value) public onlyOwner {
+        allowlisting = value;
+    }
+
     function createMemeFor(address donate, string memory ipfsHash, uint256 minTokens) public payable returns (uint256) {
-        require(allowListed[donate]==true,"Not in allow list");
+        require(allowListed[donate]==true || allowlisting!=false, "Not in allow list");
         require(msg.value >= 0.01 ether, "Minimum 0.01 ETH required to create memes");
         uint256 newTokenID = _getNextTokenID();
         _incrementTokenTypeId();
@@ -76,13 +81,12 @@ contract Rogaine is ERC1155, Ownable {
         require(msg.value >= 0.0011 ether, "ETH required to buy meme coins");
         require(creators[tokenID] != address(0), "Meme does not exist");
 
-        payable(creators[tokenID]).transfer(creatorTokenShare);
-
         // Swap ETH for MemeCoins, deducting the shares for the creators
         uint256 amountForSwap = msg.value - creatorTokenShare;
         uint256 memeCoinsBought = _swapETHForMemeCoins(amountForSwap, msg.sender, minTokens);
 
         _mint(msg.sender, tokenID, 1, ""); // Mint a single meme NFT
+        payable(creators[tokenID]).transfer(creatorTokenShare);
         emit MemePurchased(tokenID, msg.sender, 1, memeCoinsBought);
     }
 
