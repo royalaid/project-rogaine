@@ -1,5 +1,5 @@
 import { createConfig, http } from "wagmi";
-import { base } from "wagmi/chains";
+import { base, hardhat } from "wagmi/chains";
 import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
 
 declare module "wagmi" {
@@ -13,7 +13,7 @@ if (!process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID) {
 }
 
 export const config = createConfig({
-  chains: [base],
+  chains: [base, hardhat],
   connectors: [
     injected(),
     coinbaseWallet({ appName: "Create Wagmi" }),
@@ -22,5 +22,6 @@ export const config = createConfig({
   ssr: true,
   transports: {
     [base.id]: http(),
+    [hardhat.id]: http(),
   },
 });
