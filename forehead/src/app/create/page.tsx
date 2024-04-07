@@ -16,7 +16,7 @@ function MintContractInteraction() {
   const account = useAccount();
   const { data: balanceRes } = useBalance({ address: account.address });
   const [ipfsHash, setIpfsHash] = useState("");
-  const { data, error, writeContractAsync, isPending, isError } =
+  const { error, writeContractAsync, isPending, isError } =
     useWriteRogaineCreateMemeFor();
   const { address } = account;
   if (!address) return <div>Connect Wallet</div>;

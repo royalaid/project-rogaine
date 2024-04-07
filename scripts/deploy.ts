@@ -15,7 +15,7 @@ async function main() {
   ]);
   await setBalance("0x93798Ef7e3A621d7C4EfF22eDA50B931fE57a3cF", 100n ** 18n);
 
-  const aerodromeRouterAddress = "0xcf77a3ba9a5ca399b7c97c74d54e5b1beb874e43"; // Aerodrome Router address
+  // const aerodromeRouterAddress = "0xcf77a3ba9a5ca399b7c97c74d54e5b1beb874e43"; // Aerodrome Router address
   const memeCoinAddress = "0xd3fdcb837dafdb7c9c3ebd48fe22a53f6dd3d7d7"; // Example Meme Coin Address
   const factory = await AeroRogaineFactory.deploy();
   console.log("AeroRogaineFactory deployed to:", await factory.getAddress());
