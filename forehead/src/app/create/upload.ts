@@ -1,4 +1,10 @@
 "use server";
+export interface PinataResponse {
+  IpfsHash: string;
+  PinSize: number;
+  Timestamp: string;
+}
+
 export async function pinFileToIPFS(data: FormData) {
   console.log("Pinning file to IPFS");
   try {
@@ -9,9 +15,11 @@ export async function pinFileToIPFS(data: FormData) {
       },
       body: data,
     });
-    const resData = await res.json();
+    const resData: PinataResponse = await res.json();
     console.log({ resData });
+    return resData;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 }
