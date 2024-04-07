@@ -14,6 +14,7 @@ contract AerogaineFactory is Ownable {
 
     function createRogaine(address _memeCoinAddress) public onlyOwner {
         Rogaine newRogaine = new Rogaine(_memeCoinAddress, msg.sender);
+        newRogaine.transferOwnership(msg.sender);
         deployedRogaines.push(address(newRogaine));
         emit RogaineDeployed(address(newRogaine), msg.sender);
     }

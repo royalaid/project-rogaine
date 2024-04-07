@@ -7,14 +7,18 @@ const config: HardhatUserConfig = {
   solidity: "0.8.24",
   networks: {
     baseChain: {
-      url: 'https://base.llamarpc.com',
+      url: "https://base.llamarpc.com",
       chainId: 8453,
       accounts: [String(process.env.MATIC_KEY2)],
     },
     hardhat: {
       forking: {
-        url: 'https://base.llamarpc.com',
-      }
+        url: "https://base.llamarpc.com",
+      },
+    },
+    localhost: {
+      url: "http://localhost:8545",
+      accounts: [String(process.env.MATIC_KEY2)],
     },
   },
 };

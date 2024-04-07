@@ -25,7 +25,11 @@ describe("Rogaine", function () {
     const deployedRogaines = await factory.getDeployedRogaines();
     const rogaineAddress = deployedRogaines[0];
     const rogaine = await ethers.getContractAt("Rogaine", rogaineAddress);
-
+    const deployerAddress = await rogaine.owner();
+    console.log(`Factory Address: ${await factory.getAddress()}`);
+    console.log(`Deployer Address: ${deployerAddress}`);
+    console.log(`Current Deployer Address: ${deployer.address}`);
+    await rogaine.setAllowListing(false);
     return { rogaine, factory, deployer, buyer };
   }
 

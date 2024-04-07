@@ -59,7 +59,7 @@ contract Rogaine is ERC1155, Ownable {
     }
 
     function createMemeFor(address donate, string memory ipfsHash, uint256 minTokens) public payable returns (uint256) {
-        require(allowListed[donate]==true || allowlisting!=false, "Not in allow list");
+        require(allowlisting == false || (allowlisting==true && allowListed[donate]==true), "Not in allow list");
         require(msg.value >= 0.01 ether, "Minimum 0.01 ETH required to create memes");
         uint256 newTokenID = _getNextTokenID();
         _incrementTokenTypeId();
