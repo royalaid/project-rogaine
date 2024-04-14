@@ -1,4 +1,4 @@
-import Navbar from "@/app/Navbar";
+import Navbar from "@/app/components/Navbar";
 import bgStars from "@/public/gif/background-stars.gif";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";

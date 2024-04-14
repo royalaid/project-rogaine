@@ -18,9 +18,8 @@
   }
 
   header {
-    background-color: #000080; /* Adjusted to match the star background without using another image */
+    background-color: #0500FA; /* Adjusted to match the star background without using another image */
     color: #ffd700;
-    padding: 20px 0;
     text-align: center;
     font-size: 24px;
     font-weight: 700;
@@ -34,7 +33,7 @@
     border: 3px dashed #ffd700;
     padding: 10px;
     padding-top: 50px;
-    background-color: #000080;
+    background-color: #0500FA;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
     background-image: url('https://code.divshot.com/geo-bootstrap/img/microfab.gif'); /* Cool tiled background */
     background-repeat: repeat; /* Ensures the background tiles */
@@ -51,7 +50,7 @@
     border: 2px dashed #ffd700; /* Gold dashed border for the drag and drop area */
     padding: 20px;
     margin: 20px auto;
-    background-color: #000080; /* Dark blue background for contrast */
+    background-color: #0500FA;
     color: #fff; /* White text for visibility */
     cursor: pointer;
   }
