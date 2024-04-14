@@ -63,10 +63,11 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-      <div className="w-full">
+      <div className="hidden w-full">
         <div className="flex h-20 items-center justify-evenly">
           <NavbarItem href={"/"}>Home</NavbarItem>
           <NavbarItem href={"/mint"}>Mint</NavbarItem>
+          <NavbarItem href={"/gallery"}>Gallery</NavbarItem>
         </div>
       </div>
     </header>

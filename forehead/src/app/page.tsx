@@ -1,5 +1,11 @@
+import {
+  SimpleIconsFarcaster,
+  SimpleIconsTelegram,
+  SimpleIconsTwitter,
+} from "@/app/components/Icons";
 import { getFrameMetadata } from "frog/next";
 import type { Metadata } from "next";
+import Link from "next/link";
 import React from "react";
 import "./globals.css";
 import "./Home.module.css";
@@ -14,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 function App() {
-  const minting = true;
+  const minting = false;
   if (minting) {
     return (
       <div className="container h-[90%] text-center md:h-auto">
@@ -46,20 +52,36 @@ function App() {
     return (
       <div className="container h-[90%] text-center md:h-auto">
         <div className="meme-info mx-auto my-5">
-          <h1 className="text-5xl font-bold">Welcome to Regen Games!</h1>
+          <h1 className="flex text-5xl font-bold">
+            <div className="h-fit origin-center animate-spin">♻️</div>
+            Welcome to Regen Games!
+            <div className="h-fit origin-center animate-spin">♻️</div>
+          </h1>
           <p className="description">
             Creating positive-sum games that give back to the community and
             environment.
           </p>
-          <div className="my-5 flex justify-center gap-4">
-            <a href="https://twitter.com" className="link link-primary">
+          <div className="my-5 flex justify-center gap-4 underline">
+            <Link
+              href="https://twitter.com"
+              className="link link-primary flex items-center gap-2"
+            >
+              <SimpleIconsTwitter />
               Twitter
+            </Link>
+            <a
+              href="https://warpcast.com"
+              className="link link-primary flex items-center gap-2"
+            >
+              <SimpleIconsFarcaster />
+              Farcaster
             </a>
-            <a href="https://facebook.com" className="link link-secondary">
-              Facebook
-            </a>
-            <a href="https://instagram.com" className="link link-accent">
-              Instagram
+            <a
+              href="https://instagram.com"
+              className="link link-primary flex items-center gap-2"
+            >
+              <SimpleIconsTelegram />
+              Telegram
             </a>
           </div>
         </div>
