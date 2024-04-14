@@ -64,20 +64,20 @@ function App() {
           <div className="my-5 flex justify-center gap-4 underline">
             <Link
               href="https://twitter.com"
-              className="link link-primary flex items-center gap-2"
+              className="link link-primary flex items-center gap-2 hidden"
             >
               <SimpleIconsTwitter />
               Twitter
             </Link>
             <a
-              href="https://warpcast.com"
+              href="https://warpcast.com/~/channel/greenpill"
               className="link link-primary flex items-center gap-2"
             >
               <SimpleIconsFarcaster />
               Farcaster
             </a>
             <a
-              href="https://instagram.com"
+              href="https://t.me/+sMRGmwEvz9MxZDYx"
               className="link link-primary flex items-center gap-2"
             >
               <SimpleIconsTelegram />
