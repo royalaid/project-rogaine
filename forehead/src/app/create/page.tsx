@@ -1,51 +1,48 @@
 "use client";
 
 import { Title } from "@/app/components/text";
-import { ROGAINE_ADDRESS } from "@/app/constants";
 import { PinataResponse, pinFileToIPFS } from "@/app/create/upload";
 import { useUploadedFiles } from "@/app/util/localstorage";
-import { useWriteRogaineCreateMemeFor } from "@/generated";
-
+// import { useWriteRogaineCreateMemeFor } from "@/generated";
 import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
-import { parseEther } from "viem";
 import { useAccount, useBalance } from "wagmi";
 
 function MintContractInteraction() {
   const account = useAccount();
   const { data: balanceRes } = useBalance({ address: account.address });
   const [ipfsHash, setIpfsHash] = useState("");
-  const { error, writeContractAsync, isPending, isError } =
-    useWriteRogaineCreateMemeFor();
+  // const { error, writeContractAsync, isPending, isError } =
+  //   useWriteRogaineCreateMemeFor();
   const { address } = account;
   if (!address) return <div>Connect Wallet</div>;
-  console.log({ error });
+  // console.log({ error });
   return (
     <div className="flex w-full flex-col items-center gap-3">
       <h1>Write Contract</h1>
       <h2>{balanceRes?.formatted}</h2>
-      {isPending ? <h1>Pending...</h1> : null}
-      {isError ? (
-        <>
-          <h1>Error...</h1>
-          <p>{error?.message}</p>
-        </>
-      ) : null}
+      {/*{isPending ? <h1>Pending...</h1> : null}*/}
+      {/*{isError ? (*/}
+      {/*  <>*/}
+      {/*    <h1>Error...</h1>*/}
+      {/*    <p>{error?.message}</p>*/}
+      {/*  </>*/}
+      {/*) : null}*/}
       <input value={ipfsHash} onChange={(e) => setIpfsHash(e.target.value)} />
       <button
         className="buy-button"
         onClick={() => {
-          const txPromise = writeContractAsync({
-            address: ROGAINE_ADDRESS,
-            args: [address, ipfsHash, 1n],
-            value: parseEther("0.01"),
-          });
-          void toast.promise(txPromise, {
-            pending: "Creating Meme",
-            success: "Meme Created",
-            error: "Failed to create meme",
-          });
+          // const txPromise = writeContractAsync({
+          //   address: ROGAINE_ADDRESS,
+          //   args: [address, ipfsHash, 1n],
+          //   value: parseEther("0.01"),
+          // });
+          // void toast.promise(txPromise, {
+          //   pending: "Creating Meme",
+          //   success: "Meme Created",
+          //   error: "Failed to create meme",
+          // });
         }}
       >
         Write Contract
