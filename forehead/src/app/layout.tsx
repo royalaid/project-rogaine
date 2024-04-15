@@ -10,6 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://regen.games"),
   title: "Regen Games",
   description: "Meme-coinery 🤝 public goods funding",
   openGraph: {
