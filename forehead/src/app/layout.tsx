@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "Regen Games",
   description: "Meme-coinery 🤝 public goods funding",
   openGraph: {
+    url: "https://regen.games",
     title: "Regen Games",
     description: "Meme-coinery 🤝 public goods funding",
     type: "website",
