@@ -58,8 +58,9 @@ function App() {
             <div className="h-fit origin-center animate-spin">♻️</div>
           </h1>
           <p className="description">
-            Creating positive-sum games that give back to the community and
-            environment.
+            Dive into games that not only entertain but also enrich our community and planet! 
+            <br />
+            🌍 More details coming soon - don't forget to join us on the <a href="https://warpcast.com/~/channel/greenpill" className="font-bold">/greenpill</a> channel and use 🟢
           </p>
           <div className="my-5 flex justify-center gap-4 underline">
             <Link
