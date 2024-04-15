@@ -63,13 +63,13 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-      <div className="hidden w-full">
-        <div className="flex h-20 items-center justify-evenly">
-          <NavbarItem href={"/"}>Home</NavbarItem>
-          <NavbarItem href={"/mint"}>Mint</NavbarItem>
-          <NavbarItem href={"/gallery"}>Gallery</NavbarItem>
-        </div>
-      </div>
+      {/*<div className="hidden w-full">*/}
+      {/*  <div className="flex h-20 items-center justify-evenly">*/}
+      {/*    <NavbarItem href={"/"}>Home</NavbarItem>*/}
+      {/*    <NavbarItem href={"/mint"}>Mint</NavbarItem>*/}
+      {/*    <NavbarItem href={"/gallery"}>Gallery</NavbarItem>*/}
+      {/*  </div>*/}
+      {/*</div>*/}
     </header>
     // <div className="flex flex-col">
     //   <div className="flex items-center justify-center gap-4 p-5 font-sans text-2xl text-blue-500 underline">
