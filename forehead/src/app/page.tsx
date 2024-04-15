@@ -60,11 +60,12 @@ function App() {
           <p className="description">
             Dive into games that not only entertain but also enrich our community and planet! 
             <br />
-            <span className="emoji">🌍</span> More details coming soon - don't forget to join us on the <a href="https://warpcast.com/~/channel/greenpill" className="font-bold">/greenpill</a> channel and use <span className="emoji">🟢</span>
+            <span className="emoji">🌍</span> More details coming soon - don't forget to join us on the <a target="_blank" href="https://warpcast.com/~/channel/greenpill" className="font-bold">/greenpill</a> channel and use <span className="emoji">🟢</span>
           </p>
           <div className="my-5 flex justify-center gap-4 underline">
             <Link
               href="https://twitter.com"
+              target="_blank"
               className="link link-primary flex items-center gap-2 hidden"
             >
               <SimpleIconsTwitter />
@@ -72,6 +73,7 @@ function App() {
             </Link>
             <a
               href="https://warpcast.com/~/channel/greenpill"
+              target="_blank"
               className="link link-primary flex items-center gap-2"
             >
               <SimpleIconsFarcaster />
@@ -79,6 +81,7 @@ function App() {
             </a>
             <a
               href="https://t.me/+sMRGmwEvz9MxZDYx"
+              target="_blank"
               className="link link-primary flex items-center gap-2"
             >
               <SimpleIconsTelegram />
