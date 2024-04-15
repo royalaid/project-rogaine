@@ -1,3 +1,4 @@
+import Navbar from "@/app/components/Navbar";
 import bgStars from "@/public/gif/background-stars.gif";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -30,7 +31,7 @@ export default function RootLayout(props: { children: ReactNode }) {
       >
         <Providers>
           <div>
-            {/*<Navbar />*/}
+            <Navbar />
             {props.children}
             <ToastContainer
               position="bottom-center"
