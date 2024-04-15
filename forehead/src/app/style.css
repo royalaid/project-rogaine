@@ -136,3 +136,7 @@
   section {
     text-align: center;
   }
+
+  .emoji {
+    font-size: 1.5em; /* Makes the emoji text larger for better visibility */
+  }
