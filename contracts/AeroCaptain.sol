@@ -4,11 +4,15 @@ import "./IRouter.sol";
 import "./IERC20.sol";
 import "./IGauge.sol";
 
+/*
+    Most of this contract assumes the paired liquidity is is pegged. so both tokens are worth the "same"
+*/
+
 contract AeroCaptain {
-    address public pendingGov;
-    address public management;
+    address public manager;
     address public treasury;
     address public guardian;
+
     uint public maxSlippageBpsTokenToUsdc;
     uint public maxSlippageBpsUsdcToToken;
     uint public maxSlippageBpsLiquidity;
@@ -24,22 +28,42 @@ contract AeroCaptain {
     IERC20 public constant USDC = IERC20(0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA);
     address public constant factory = 0x420DD381b31aEf6683db6B902084cB0FFECe40Da;
 
-    error OnlyPendingGov();
     error OnlyManagement();
+    error OnlyGuardian();
+
     error MaxSlippageTooHigh();
     error NotEnoughTokens();
     error LiquiditySlippageTooHigh();
     
+    modifier onlyManager() {
+        if(msg.sender!=manager){
+            revert OnlyManagement();
+        }
+        _;
+    }
+
+    modifier onlyGuardian() {
+        if(msg.sender!=guardian){
+            revert OnlyGuardian();
+        }
+        _;
+    }
+
     constructor(
         address treasury_,
-        address management_,
+        address manager_,
+        address guardian_,
         uint maxSlippageBpsTokenToUsdc_,
         uint maxSlippageBpsUsdcToToken_,
         uint maxSlippageBpsLiquidity_
     )
-    {
+    {   
+        // recieves the rewards
         treasury = treasury_;
-        management = management_;
+        // manages the liquidity
+        manager = manager_;
+        // manages control
+        guardian = guardian_;
         maxSlippageBpsTokenToUsdc = maxSlippageBpsTokenToUsdc_;
         maxSlippageBpsUsdcToToken = maxSlippageBpsUsdcToToken_;
         maxSlippageBpsLiquidity = maxSlippageBpsLiquidity_;
@@ -50,7 +74,7 @@ contract AeroCaptain {
         AERO.transfer(treasury, AERO.balanceOf(address(this)));
     }
 
-    function deposit(uint tokenAmount, uint usdcAmount) public {
+    function deposit(uint tokenAmount, uint usdcAmount) public onlyManager {
         uint lpTokenPrice = getLpTokenPrice();
         TOKEN.approve(address(router), tokenAmount);
         USDC.approve(address(router), usdcAmount);
@@ -65,11 +89,11 @@ contract AeroCaptain {
         tokenGauge.deposit(LP_TOKEN.balanceOf(address(this)));
     }
 
-    function depositAll() external {
+    function depositAll() onlyManager external {
         deposit(TOKEN.balanceOf(address(this)), USDC.balanceOf(address(this)));
     }
 
-    function withdrawLiquidity(uint tokenAmount) public returns (uint) {
+    function withdrawLiquidity(uint tokenAmount) public onlyManager returns (uint) {
         uint lpTokenPrice = getLpTokenPrice();
         uint liquidityToWithdraw = tokenAmount * 1e18 / lpTokenPrice;
         uint ownedLiquidity = tokenGauge.balanceOf(address(this));
@@ -78,7 +102,16 @@ contract AeroCaptain {
         tokenGauge.withdraw(liquidityToWithdraw);
 
         LP_TOKEN.approve(address(router), liquidityToWithdraw);
-        (uint amountUSDC, uint amountToken) = router.removeLiquidity(address(USDC), address(TOKEN), true, liquidityToWithdraw, 0, 0, address(this), block.timestamp);
+        (uint amountUSDC, uint amountToken) = router.removeLiquidity(
+                                                                        address(USDC), 
+                                                                        address(TOKEN), 
+                                                                        true, 
+                                                                        liquidityToWithdraw, 
+                                                                        0, 
+                                                                        0, 
+                                                                        address(this),
+                                                                        block.timestamp
+                                                                        );
 
         uint totalTokenReceived = amountToken + (amountUSDC * TOKEN_USDC_CONVERSION_MULTI);
 
@@ -89,18 +122,18 @@ contract AeroCaptain {
         return amountUSDC;
     }
 
-    function withdrawLiquidityAndSwapToTOKEN(uint tokenAmount) external {
+    function withdrawLiquidityAndSwapToTOKEN(uint tokenAmount) onlyManager external {
         uint usdcAmount = withdrawLiquidity(tokenAmount);
         swapUSDCtoTOKEN(usdcAmount);
     }
 
-    function swapUSDCtoTOKEN(uint usdcAmount) public {
+    function swapUSDCtoTOKEN(uint usdcAmount) onlyManager public {
         uint minOut = usdcAmount * (PRECISION - maxSlippageBpsUsdcToToken) / PRECISION * TOKEN_USDC_CONVERSION_MULTI;
         USDC.approve(address(router), usdcAmount);
         router.swapExactTokensForTokens(usdcAmount, minOut, getRoute(address(USDC), address(TOKEN)), address(this), block.timestamp);
     }
 
-    function swapTOKENtoUSDC(uint tokenAmount) public { 
+    function swapTOKENtoUSDC(uint tokenAmount) onlyManager public { 
         uint minOut = tokenAmount * (PRECISION - maxSlippageBpsTokenToUsdc) / PRECISION / TOKEN_USDC_CONVERSION_MULTI;
         TOKEN.approve(address(router), tokenAmount);
         router.swapExactTokensForTokens(tokenAmount, minOut, getRoute(address(TOKEN), address(USDC)), address(this), block.timestamp);
@@ -119,7 +152,7 @@ contract AeroCaptain {
         return routeArray;
     }
 
-    function setMaxSlippageTokenToUsdc(uint newMaxSlippageBps) external {
+    function setMaxSlippageTokenToUsdc(uint newMaxSlippageBps) onlyGuardian external {
         if (newMaxSlippageBps > 10000) revert MaxSlippageTooHigh();
         maxSlippageBpsTokenToUsdc = newMaxSlippageBps;
     }
@@ -129,21 +162,12 @@ contract AeroCaptain {
         maxSlippageBpsUsdcToToken = newMaxSlippageBps;
     }
 
-    function setMaxSlippageLiquidity(uint newMaxSlippageBps) external {
+    function setMaxSlippageLiquidity(uint newMaxSlippageBps) onlyGuardian external {
         if (newMaxSlippageBps > 10000) revert MaxSlippageTooHigh();
         maxSlippageBpsLiquidity = newMaxSlippageBps;
     }
 
-    function setPendingGov(address newPendingGov_) external {
-        pendingGov = newPendingGov_;
-    }
-
-    function claimGov() external {
-        gov = pendingGov;
-        pendingGov = address(0);
-    }
-
-    function changeTreasury(address newTreasury_) external {
+    function changeTreasury(address newTreasury_) onlyGuardian external {
         treasury = newTreasury_;
     }
 }
