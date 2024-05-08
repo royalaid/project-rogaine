@@ -4,7 +4,7 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IAERO.sol";
 
-interface IERC20 {
+interface IERC20Name {
     function name() external view returns (string memory);
 }
 
@@ -33,7 +33,7 @@ contract Rogaine is ERC1155, Ownable {
         memeCoinAddress = _memeCoinAddress;
         defaultFactory = aerodromeRouter.defaultFactory();
         creator = _creator;
-        name = IERC20(memeCoinAddress).name();
+        name = IERC20Name(memeCoinAddress).name();
     }
 
     function setDonations(address _donate, bool value) public onlyOwner {
