@@ -3,7 +3,6 @@ pragma solidity ^0.8.24;
 import "./IRouter.sol";
 import "./IERC20.sol";
 import "./IGauge.sol";
-import "hardhat/console.sol";
 
 contract AeroBond {
     address public manager;
