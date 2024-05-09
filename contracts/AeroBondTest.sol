@@ -4,19 +4,15 @@ import "./IRouter.sol";
 import "./IERC20.sol";
 import "./IGauge.sol";
 
-contract AeroBond {
+contract AeroBondTest {
     address public manager;
     address public treasury;
 
-    IERC20 public constant LP_TOKEN = IERC20(0x11D9944cB1886F5Ca08673C0B61b4d159946AcDa); // REGEN/WETH
-
-    IERC20 public constant AERO = IERC20(0x940181a94A35A4569E4529A3CDfB74e38FD98631); // AERO
-    IRouter public constant router = IRouter(0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43); // Router
-    IERC20 public constant TOKEN = IERC20(0x1D653f09f216682eDE4549455D6Cf45f93C730cf); // REGEN
-    IERC20 public constant WETH = IERC20(0x4200000000000000000000000000000000000006); // WETH
-
-    uint256 public ratio;
-    uint256 public TEN_THOUSAND = 10_000;
+    IERC20 public LP_TOKEN; // REGEN/WETH
+    IERC20 public AERO = IERC20(0x940181a94A35A4569E4529A3CDfB74e38FD98631); // AERO
+    IRouter public router = IRouter(0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43); // Router
+    IERC20 public TOKEN; // REGEN
+    IERC20 public WETH; // WETH
 
     IGauge public tokenGauge;
     bool public tokenGaugeEnabled;
@@ -24,7 +20,7 @@ contract AeroBond {
     error OnlyManagement();
 
     modifier onlyManager() {
-        if(msg.sender!=manager){
+        if(msg.sender != manager) {
             revert OnlyManagement();
         }
         _;
@@ -33,25 +29,26 @@ contract AeroBond {
     constructor(
         address treasury_,
         address manager_,
-        uint256 ratio_
+        address lpTokenAddress,
+        address tokenAddress,
+        address wethAddress
     )
     {   
-        // recieves the rewards
+        // receives the rewards
         treasury = treasury_;
         // manages the liquidity
         manager = manager_;
-
-        ratio = ratio_;
+        // set LP token address
+        LP_TOKEN = IERC20(lpTokenAddress);
+        // set TOKEN address
+        TOKEN = IERC20(tokenAddress);
+        // set WETH address
+        WETH = IERC20(wethAddress);
     }
 
     function claimAeroRewards() external {
         tokenGauge.getReward(address(this));
         AERO.transfer(treasury, AERO.balanceOf(address(this)));
-    }
-
-    function setRatio(uint256 ratio_) onlyManager external {
-        require(ratio_<=TEN_THOUSAND);
-        ratio = ratio_;
     }
 
     function initializeGauge(address tokenGauge_) onlyManager external {
@@ -83,10 +80,7 @@ contract AeroBond {
         require(lpTokensReceived > 0, "No LP tokens received");
 
         WETH.transfer(msg.sender, (wethAmount-wethSpent));
-
-        uint256 given = tokenSpent * ratio / TEN_THOUSAND;
-
-        TOKEN.transfer(msg.sender, given);
+        TOKEN.transfer(msg.sender, tokenSpent);
 
         if(tokenGaugeEnabled){
             tokenGauge.deposit(LP_TOKEN.balanceOf(address(this)));
