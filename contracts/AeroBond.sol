@@ -48,6 +48,10 @@ contract AeroBond {
         tokenGauge = IGauge(tokenGauge_);
     }
 
+    function disableGauge() onlyManager external {
+        tokenGaugeEnabled=false;
+    }
+
     function changeTreasury(address newTreasury_) onlyManager external {
         treasury = newTreasury_;
     }
@@ -64,8 +68,6 @@ contract AeroBond {
         uint256 tokenHeld = TOKEN.balanceOf(address(this));
         TOKEN.approve(address(router), tokenHeld);
 
-        //(uint256 amountA, uint256 amountB, uint256 liquidity)  = router.quoteAddLiquidity(address(TOKEN), address(WETH), false, 0x420DD381b31aEf6683db6B902084cB0FFECe40Da, tokenHeld, wethAmount);
-
         (uint tokenSpent, uint wethSpent, uint lpTokensReceived) = router.addLiquidity(address(TOKEN), address(WETH), false, tokenHeld, wethAmount, 0, 0, address(this), block.timestamp);
         require(lpTokensReceived > 0, "No LP tokens received");
 
@@ -75,5 +77,25 @@ contract AeroBond {
         if(tokenGaugeEnabled){
             tokenGauge.deposit(LP_TOKEN.balanceOf(address(this)));
         }
+    }
+
+    function withdrawLiquidity() public onlyManager returns (uint256, uint256) {
+
+        uint ownedLiquidity = tokenGauge.balanceOf(address(this));
+
+        tokenGauge.withdraw(ownedLiquidity);
+
+        LP_TOKEN.approve(address(router), ownedLiquidity);
+        (uint256 amountWETH, uint256 amountToken) = router.removeLiquidity(
+                                                                        address(WETH), 
+                                                                        address(TOKEN), 
+                                                                        false, 
+                                                                        ownedLiquidity, 
+                                                                        0, 
+                                                                        0, 
+                                                                        address(this),
+                                                                        block.timestamp
+                                                                        );
+        return (amountWETH, amountToken);
     }
 }
