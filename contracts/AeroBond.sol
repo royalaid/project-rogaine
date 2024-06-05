@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+
 import "./IRouter.sol";
 import "./IERC20.sol";
 import "./IGauge.sol";
@@ -24,18 +25,13 @@ contract AeroBond {
     error OnlyManagement();
 
     modifier onlyManager() {
-        if(msg.sender!=manager){
+        if (msg.sender != manager) {
             revert OnlyManagement();
         }
         _;
     }
 
-    constructor(
-        address treasury_,
-        address manager_,
-        uint256 ratio_
-    )
-    {   
+    constructor(address treasury_, address manager_, uint256 ratio_) {
         // recieves the rewards
         treasury = treasury_;
         // manages the liquidity
@@ -49,29 +45,29 @@ contract AeroBond {
         AERO.transfer(treasury, AERO.balanceOf(address(this)));
     }
 
-    function setRatio(uint256 ratio_) onlyManager external {
-        require(ratio_<=TEN_THOUSAND);
+    function setRatio(uint256 ratio_) external onlyManager {
+        require(ratio_ <= TEN_THOUSAND);
         ratio = ratio_;
     }
 
-    function initializeGauge(address tokenGauge_) onlyManager external {
+    function initializeGauge(address tokenGauge_) external onlyManager {
         tokenGaugeEnabled = true;
         tokenGauge = IGauge(tokenGauge_);
     }
 
-    function disableGauge() onlyManager external {
-        tokenGaugeEnabled=false;
+    function disableGauge() external onlyManager {
+        tokenGaugeEnabled = false;
     }
 
-    function changeTreasury(address newTreasury_) onlyManager external {
+    function changeTreasury(address newTreasury_) external onlyManager {
         treasury = newTreasury_;
     }
 
-    function transferTokens(address token) onlyManager external {
+    function transferTokens(address token) external onlyManager {
         IERC20(token).transfer(treasury, IERC20(token).balanceOf(address(this)));
     }
 
-    function deposit(uint wethAmount) public {
+    function deposit(uint256 wethAmount) public {
         WETH.transferFrom(msg.sender, address(this), wethAmount);
 
         WETH.approve(address(router), wethAmount);
@@ -79,37 +75,31 @@ contract AeroBond {
         uint256 tokenHeld = TOKEN.balanceOf(address(this));
         TOKEN.approve(address(router), tokenHeld);
 
-        (uint tokenSpent, uint wethSpent, uint lpTokensReceived) = router.addLiquidity(address(TOKEN), address(WETH), false, tokenHeld, wethAmount, 0, 0, address(this), block.timestamp);
+        (uint256 tokenSpent, uint256 wethSpent, uint256 lpTokensReceived) = router.addLiquidity(
+            address(TOKEN), address(WETH), false, tokenHeld, wethAmount, 0, 0, address(this), block.timestamp
+        );
         require(lpTokensReceived > 0, "No LP tokens received");
 
-        WETH.transfer(msg.sender, (wethAmount-wethSpent));
+        WETH.transfer(msg.sender, (wethAmount - wethSpent));
 
         uint256 given = tokenSpent * ratio / TEN_THOUSAND;
 
         TOKEN.transfer(msg.sender, given);
 
-        if(tokenGaugeEnabled){
+        if (tokenGaugeEnabled) {
             tokenGauge.deposit(LP_TOKEN.balanceOf(address(this)));
         }
     }
 
     function withdrawLiquidity() public onlyManager returns (uint256, uint256) {
-
-        uint ownedLiquidity = tokenGauge.balanceOf(address(this));
+        uint256 ownedLiquidity = tokenGauge.balanceOf(address(this));
 
         tokenGauge.withdraw(ownedLiquidity);
 
         LP_TOKEN.approve(address(router), ownedLiquidity);
         (uint256 amountWETH, uint256 amountToken) = router.removeLiquidity(
-                                                                        address(WETH), 
-                                                                        address(TOKEN), 
-                                                                        false, 
-                                                                        ownedLiquidity, 
-                                                                        0, 
-                                                                        0, 
-                                                                        address(this),
-                                                                        block.timestamp
-                                                                        );
+            address(WETH), address(TOKEN), false, ownedLiquidity, 0, 0, address(this), block.timestamp
+        );
         return (amountWETH, amountToken);
     }
 }
