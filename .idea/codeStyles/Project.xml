@@ -1,0 +1,116 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <option name="RIGHT_MARGIN" value="110" />
+    <ClojureCodeStyleSettings>
+      <option name="alignMapValues" value="false" />
+      <option name="oneSpaceLists" value="true" />
+      <option name="commentAlignColumn" value="40" />
+      <option name="indentCustomisations">
+        <map>
+          <entry key="cljs.core/cond-&gt;&gt;" value="1" />
+          <entry key="cljs.core/defonce" value="1" />
+          <entry key="cljs.core/defprotocol" value="1" />
+          <entry key="cljs.core/ns" value="1" />
+          <entry key="clojure.core/cond-&gt;" value="1" />
+          <entry key="clojure.core/cond-&gt;&gt;" value="1" />
+          <entry key="clojure.core/defmulti" value="-1" />
+          <entry key="clojure.core/ns" value="1" />
+          <entry key="clojure.string/join" value="1" />
+          <entry key="com.rpl.specter/recursive-path" value="-1" />
+          <entry key="common.lambda.core/deflambda-with-common-interceptors" value="1" />
+          <entry key="conman.core/with-transaction" value="1" />
+          <entry key="devcards.core/defcard" value="-1" />
+          <entry key="mount.core/defstate" value="1" />
+          <entry key="om-css.core/defui" value="1" />
+          <entry key="pylon.macros/defclass" value="1" />
+          <entry key="re-frame.core/reg-cofx" value="1000" />
+          <entry key="re-frame.core/reg-event-ctx" value="1000" />
+          <entry key="re-frame.core/reg-event-db" value="1" />
+          <entry key="re-frame.core/reg-event-fx" value="1" />
+          <entry key="re-frame.core/reg-fx" value="1" />
+          <entry key="re-frame.core/reg-sub" value="1" />
+          <entry key="view.asset/if-available" value="1" />
+          <entry key="view.asset/when-available" value="1" />
+          <entry key="vimsical-ui.components.button/render" value="1" />
+          <entry key="vimsical-ui.components.button/style" value="1" />
+          <entry key="vimsical-ui.components.text-editor/render" value="1" />
+          <entry key="vimsical-ui.components.tooltip/render" value="1" />
+          <entry key="vimsical-ui.components.tooltip/style" value="1" />
+          <entry key="vimsical.components.nav/create-vims" value="1" />
+          <entry key="vimsical.components.nav/ident" value="1" />
+          <entry key="vimsical.components.nav/query" value="1" />
+          <entry key="vimsical.components.nav/render" value="1" />
+          <entry key="vimsical.components.nav/style" value="1" />
+          <entry key="vimsical.impl.ds.dll/get-head" value="1" />
+          <entry key="vimsical.impl.ds.dll/set-head" value="1" />
+          <entry key="vimsical.util.devcards/defcard-om" value="-1" />
+          <entry key="vimsical.util.devcards/defcard-om-ref" value="-1" />
+          <entry key="vimsical.util.om/defdispatch" value="-1" />
+          <entry key="vimsical.util.om/html" value="1" />
+          <entry key="vimsical.util.spec/defentity" value="-1" />
+          <entry key="vimsical.util.util/condp-&gt;" value="-1" />
+        </map>
+      </option>
+    </ClojureCodeStyleSettings>
+    <HTMLCodeStyleSettings>
+      <option name="HTML_SPACE_INSIDE_EMPTY_TAG" value="true" />
+    </HTMLCodeStyleSettings>
+    <JSCodeStyleSettings version="0">
+      <option name="FORCE_SEMICOLON_STYLE" value="true" />
+      <option name="SPACE_BEFORE_FUNCTION_LEFT_PARENTH" value="false" />
+      <option name="FORCE_QUOTE_STYlE" value="true" />
+      <option name="ENFORCE_TRAILING_COMMA" value="Remove" />
+      <option name="SPACES_WITHIN_OBJECT_LITERAL_BRACES" value="true" />
+      <option name="SPACES_WITHIN_IMPORTS" value="true" />
+    </JSCodeStyleSettings>
+    <TypeScriptCodeStyleSettings version="0">
+      <option name="FORCE_SEMICOLON_STYLE" value="true" />
+      <option name="SPACE_BEFORE_FUNCTION_LEFT_PARENTH" value="false" />
+      <option name="FORCE_QUOTE_STYlE" value="true" />
+      <option name="ENFORCE_TRAILING_COMMA" value="Remove" />
+      <option name="SPACES_WITHIN_OBJECT_LITERAL_BRACES" value="true" />
+      <option name="SPACES_WITHIN_IMPORTS" value="true" />
+      <option name="IMPORT_SORT_MODULE_NAME" value="true" />
+    </TypeScriptCodeStyleSettings>
+    <VueCodeStyleSettings>
+      <option name="INTERPOLATION_NEW_LINE_AFTER_START_DELIMITER" value="false" />
+      <option name="INTERPOLATION_NEW_LINE_BEFORE_END_DELIMITER" value="false" />
+    </VueCodeStyleSettings>
+    <codeStyleSettings language="HTML">
+      <option name="SOFT_MARGINS" value="80" />
+      <indentOptions>
+        <option name="INDENT_SIZE" value="2" />
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="2" />
+      </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="JSON">
+      <indentOptions>
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="2" />
+      </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="JavaScript">
+      <option name="SOFT_MARGINS" value="80" />
+      <indentOptions>
+        <option name="INDENT_SIZE" value="2" />
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="2" />
+      </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="TypeScript">
+      <option name="SOFT_MARGINS" value="80" />
+      <indentOptions>
+        <option name="INDENT_SIZE" value="2" />
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="2" />
+      </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="Vue">
+      <option name="SOFT_MARGINS" value="80" />
+      <indentOptions>
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+      </indentOptions>
+    </codeStyleSettings>
+  </code_scheme>
+</component>
