@@ -1,6 +1,7 @@
 import hre, { ethers } from "hardhat";
 import { IERC20, IWETH } from "../../typechain-types";
 import { REGEN_WHALE, REGEN_ADDRESS } from "./constants";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 async function impersonateAccount(address: string) {
   await hre.network.provider.request({
@@ -60,4 +61,23 @@ export async function fundWeth(
   )) as unknown as IWETH;
   await weth.deposit({ value: wethAmount });
   return weth;
+}
+
+export async function depositWeth(
+  singer: HardhatEthersSigner,
+  weth: IWETH,
+  amount: bigint,
+  targetAddress: string,
+  cb: (amount: bigint) => Promise<void>
+) {
+  const curWalletWeth = weth.connect(singer);
+  await curWalletWeth.approve(targetAddress, amount);
+  if (amount > (await curWalletWeth.balanceOf(singer.address))) {
+    throw new Error("Not enough balance");
+  } else {
+    console.log(
+      `Depositing ${ethers.formatEther(amount)} WETH to ${targetAddress}`
+    );
+  }
+  await cb(amount);
 }

@@ -3,7 +3,7 @@ import { expect } from "chai";
 import hre, { ethers } from "hardhat";
 import { IERC20, IWETH } from "../../typechain-types";
 import { REGEN_ADDRESS, REGEN_WHALE, WETH_ADDRESS } from "./constants";
-import { fundWeth, initAeroBond } from "./AeroBondInteractions";
+import { depositWeth, fundWeth, initAeroBond } from "./AeroBondInteractions";
 
 async function deployAeroBondFixture() {
   const [deployer, buyer] = await ethers.getSigners();
@@ -54,16 +54,15 @@ describe("AeroBond", function () {
         // Fund the deployer with WETH
         const weth = await fundWeth(WETH_ADDRESS, deployer.address, 10);
         expect(await weth.balanceOf(deployer.address)).to.be.greaterThan(0);
-
-        const deployerWeth = weth.connect(deployer);
-        await deployerWeth.approve(aeroBondAddress, wethAmount);
-
-        console.log(
-          `Depositing ${ethers.formatEther(
-            wethAmount
-          )} WETH to ${aeroBondAddress}`
+        await depositWeth(
+          deployer,
+          weth,
+          wethAmount,
+          aeroBondAddress,
+          async (amount: bigint) => {
+            await aeroBond.connect(deployer).deposit(amount);
+          }
         );
-        await aeroBond.deposit(wethAmount);
         const regenBalanceAfterDeposit = await regenContract.balanceOf(
           aeroBondAddress
         );
@@ -98,6 +97,39 @@ describe("AeroBond", function () {
           aeroBond.connect(deployer).deposit(wethAmount)
         ).to.be.revertedWithoutReason();
       });
+    });
+  });
+
+  describe("Withdraw", function () {
+    it("should allow the user to deposit and withdraw tokens", async function () {
+      const { aeroBond, deployer } = await loadFixture(deployAeroBondFixture);
+      const aeroBondAddress = await aeroBond.getAddress();
+      const { startingRegenBalance, regenContract } = await initAeroBond(
+        aeroBondAddress
+      );
+
+      const wethAmount = ethers.parseEther("10");
+      // Fund the deployer with WETH
+      const weth = await fundWeth(WETH_ADDRESS, deployer.address, 10);
+      expect(await weth.balanceOf(deployer.address)).to.be.greaterThan(0);
+
+      await depositWeth(
+        deployer,
+        weth,
+        wethAmount,
+        aeroBondAddress,
+        async (amount: bigint) => {
+          await aeroBond.connect(deployer).deposit(amount);
+        }
+      );
+      const regenBalanceOfDeployerAfterDeposit = await regenContract.balanceOf(
+        deployer.address
+      );
+      expect(regenBalanceOfDeployerAfterDeposit).to.be.gt(0);
+      const regenBalanceOfAeroBondAfterDeposit = await regenContract.balanceOf(
+        aeroBondAddress
+      );
+      expect(startingRegenBalance).to.be.gt(regenBalanceOfAeroBondAfterDeposit);
     });
   });
 });
