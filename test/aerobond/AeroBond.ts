@@ -1,8 +1,17 @@
-import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import {
+  impersonateAccount,
+  loadFixture,
+} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
 import { IERC20, IWETH } from "../../typechain-types";
-import { REGEN_ADDRESS, REGEN_WHALE, WETH_ADDRESS } from "./constants";
+import {
+  REGEN_ADDRESS,
+  REGEN_WHALE,
+  TEST_TOKEN_ADDRESS,
+  TEST_TOKEN_MINTER,
+  WETH_ADDRESS,
+} from "./constants";
 import { depositWeth, fundWeth, initAeroBond } from "./AeroBondInteractions";
 
 async function deployAeroBondFixture() {
@@ -17,7 +26,7 @@ async function deployAeroBondFixture() {
   const aeroBond = await AeroBond.deploy(
     deployer.address,
     deployer.address,
-    50
+    5000
   );
   const treasuryAddress = await aeroBond.treasury();
   const ownerAddress = await aeroBond.manager();
@@ -111,7 +120,18 @@ describe("AeroBond", function () {
       const wethAmount = ethers.parseEther("10");
       // Fund the deployer with WETH
       const weth = await fundWeth(WETH_ADDRESS, deployer.address, 10);
-      expect(await weth.balanceOf(deployer.address)).to.be.greaterThan(0);
+      const deployerWethBalance = await weth.balanceOf(deployer.address);
+      expect(deployerWethBalance).to.be.greaterThan(0);
+      console.log(
+        `Deployer WETH balance before deposit: ${ethers.formatEther(
+          deployerWethBalance
+        )}`
+      );
+      console.log(
+        `regen balance of deployer before deposit: ${ethers.formatEther(
+          await regenContract.balanceOf(deployer.address)
+        )}`
+      );
 
       await depositWeth(
         deployer,
@@ -122,14 +142,57 @@ describe("AeroBond", function () {
           await aeroBond.connect(deployer).deposit(amount);
         }
       );
+      const deployerWethBalanceAfterDeposit = await weth.balanceOf(
+        deployer.address
+      );
+      console.log(
+        `Deployer WETH balance after deposit: ${ethers.formatEther(
+          deployerWethBalanceAfterDeposit
+        )}`
+      );
+
       const regenBalanceOfDeployerAfterDeposit = await regenContract.balanceOf(
         deployer.address
       );
       expect(regenBalanceOfDeployerAfterDeposit).to.be.gt(0);
+
       const regenBalanceOfAeroBondAfterDeposit = await regenContract.balanceOf(
         aeroBondAddress
       );
       expect(startingRegenBalance).to.be.gt(regenBalanceOfAeroBondAfterDeposit);
+
+      console.log(
+        `Regen balance of deployer after deposit: ${ethers.formatEther(
+          regenBalanceOfDeployerAfterDeposit
+        )}`
+      );
+      console.log(
+        `Regen balance of AeroBond after deposit: ${ethers.formatEther(
+          regenBalanceOfAeroBondAfterDeposit
+        )}`
+      );
+    });
+  });
+
+  describe("TestToken", function () {
+    it("should allow the user to mint tokens", async function () {
+      const { aeroBond, deployer } = await loadFixture(deployAeroBondFixture);
+      const testToken = (await ethers.getContractAt(
+        "contracts/IERC20.sol:IERC20",
+        TEST_TOKEN_ADDRESS
+      )) as unknown as IERC20;
+      await impersonateAccount(TEST_TOKEN_MINTER);
+      await hre.network.provider.send("hardhat_setBalance", [
+        TEST_TOKEN_MINTER,
+        "0x3635C9ADC5DEA00000", // 1000 ETH in hexadecimal
+      ]);
+      const testTokenMinterSigner = await ethers.getSigner(TEST_TOKEN_MINTER);
+      await testToken
+        .connect(testTokenMinterSigner)
+        .mint(deployer.address, ethers.parseEther("1"));
+      const testTokenBalance = await testToken.balanceOf(deployer.address);
+      console.log(`Test token balance: ${testTokenBalance}`);
+      expect(testTokenBalance).to.be.greaterThan(0);
     });
   });
 });
