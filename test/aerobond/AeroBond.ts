@@ -4,7 +4,12 @@ import {
 } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
-import { IERC20, IWETH } from "../../typechain-types";
+import {
+  IERC20,
+  IUniveralRouter__factory,
+  IUniveralRouter,
+  IWETH,
+} from "../../typechain-types";
 import {
   REGEN_ADDRESS,
   REGEN_WHALE,
@@ -12,35 +17,51 @@ import {
   TEST_TOKEN_MINTER,
   WETH_ADDRESS,
 } from "./constants";
-import { depositWeth, fundWeth, initAeroBond } from "./AeroBondInteractions";
+import {
+  depositWeth,
+  fundWeth,
+  initAeroBond,
+  initAeroBondForTestToken,
+} from "./AeroBondInteractions";
+import { encodeSwapParams } from "../utils/Router";
 
-async function deployAeroBondFixture() {
-  const [deployer, buyer] = await ethers.getSigners();
-  // Minting ETH to the deployer's wallet for testing purposes
-  await hre.network.provider.send("hardhat_setBalance", [
-    deployer.address,
-    "0x3635C9ADC5DEA00000", // 1000 ETH in hexadecimal
-  ]);
-  const AeroBond = await ethers.getContractFactory("AeroBond");
-  const aerodromeRouterAddress = "0xcf77a3ba9a5ca399b7c97c74d54e5b1beb874e43"; // Aerodrome Router address
-  const aeroBond = await AeroBond.deploy(
-    deployer.address,
-    deployer.address,
-    5000
-  );
-  const treasuryAddress = await aeroBond.treasury();
-  const ownerAddress = await aeroBond.manager();
-  console.log(`AeroBond Address: ${await aeroBond.getAddress()}`);
-  console.log(`Treasury Address: ${treasuryAddress}`);
-  console.log(`Owner Address: ${ownerAddress}`);
-  console.log(`Current Deployer Address: ${deployer.address}`);
-  return { aeroBond, deployer, buyer };
+function createAeroBondFixture(tokenAddress: string) {
+  async function deployAeroBondFixture() {
+    const [deployer, buyer] = await ethers.getSigners();
+    // Minting ETH to the deployer's wallet for testing purposes
+    await hre.network.provider.send("hardhat_setBalance", [
+      deployer.address,
+      "0x3635C9ADC5DEA00000", // 1000 ETH in hexadecimal
+    ]);
+    const AeroBond = await ethers.getContractFactory("AeroBond");
+    const aerodromeRouterAddress = "0xcf77a3ba9a5ca399b7c97c74d54e5b1beb874e43"; // Aerodrome Router address
+    const aeroBond = await AeroBond.deploy(
+      deployer.address,
+      deployer.address,
+      5000,
+      tokenAddress
+    );
+    const treasuryAddress = await aeroBond.treasury();
+    const ownerAddress = await aeroBond.manager();
+    console.log(`AeroBond Address: ${await aeroBond.getAddress()}`);
+    console.log(`Treasury Address: ${treasuryAddress}`);
+    console.log(`Owner Address: ${ownerAddress}`);
+    console.log(`Current Deployer Address: ${deployer.address}`);
+    return { aeroBond, deployer, buyer };
+  }
+  return deployAeroBondFixture;
 }
+
+const abiCoder = ethers.AbiCoder.defaultAbiCoder();
+
+const deployRegenAeroBondFixture = createAeroBondFixture(REGEN_ADDRESS);
 
 describe("AeroBond", function () {
   describe("Deployment", function () {
     it("should set the correct treasury and manager addresses", async function () {
-      const { aeroBond, deployer } = await loadFixture(deployAeroBondFixture);
+      const { aeroBond, deployer } = await loadFixture(
+        deployRegenAeroBondFixture
+      );
       const treasuryAddress = await aeroBond.treasury();
       const managerAddress = await aeroBond.manager();
 
@@ -52,7 +73,9 @@ describe("AeroBond", function () {
   describe("Deposit", function () {
     context("when the user has enough WETH balance", function () {
       it("should allow the user to deposit WETH and receive LP tokens", async function () {
-        const { aeroBond, deployer } = await loadFixture(deployAeroBondFixture);
+        const { aeroBond, deployer } = await loadFixture(
+          deployRegenAeroBondFixture
+        );
         const aeroBondAddress = await aeroBond.getAddress();
 
         const { startingRegenBalance, regenContract } = await initAeroBond(
@@ -90,7 +113,9 @@ describe("AeroBond", function () {
 
     context("when the user does not have enough WETH balance", function () {
       it("should revert the transaction", async function () {
-        const { aeroBond, deployer } = await loadFixture(deployAeroBondFixture);
+        const { aeroBond, deployer } = await loadFixture(
+          deployRegenAeroBondFixture
+        );
         const wethAmount = ethers.parseEther("10");
         const aeroBondAddress = await aeroBond.getAddress();
 
@@ -111,7 +136,9 @@ describe("AeroBond", function () {
 
   describe("Withdraw", function () {
     it("should allow the user to deposit and withdraw tokens", async function () {
-      const { aeroBond, deployer } = await loadFixture(deployAeroBondFixture);
+      const { aeroBond, deployer } = await loadFixture(
+        deployRegenAeroBondFixture
+      );
       const aeroBondAddress = await aeroBond.getAddress();
       const { startingRegenBalance, regenContract } = await initAeroBond(
         aeroBondAddress
@@ -174,25 +201,63 @@ describe("AeroBond", function () {
     });
   });
 
+  const deployTestTokenAeroBondFixture =
+    createAeroBondFixture(TEST_TOKEN_ADDRESS);
+
   describe("TestToken", function () {
     it("should allow the user to mint tokens", async function () {
-      const { aeroBond, deployer } = await loadFixture(deployAeroBondFixture);
-      const testToken = (await ethers.getContractAt(
-        "contracts/IERC20.sol:IERC20",
-        TEST_TOKEN_ADDRESS
-      )) as unknown as IERC20;
-      await impersonateAccount(TEST_TOKEN_MINTER);
-      await hre.network.provider.send("hardhat_setBalance", [
-        TEST_TOKEN_MINTER,
-        "0x3635C9ADC5DEA00000", // 1000 ETH in hexadecimal
-      ]);
-      const testTokenMinterSigner = await ethers.getSigner(TEST_TOKEN_MINTER);
-      await testToken
-        .connect(testTokenMinterSigner)
-        .mint(deployer.address, ethers.parseEther("1"));
-      const testTokenBalance = await testToken.balanceOf(deployer.address);
-      console.log(`Test token balance: ${testTokenBalance}`);
-      expect(testTokenBalance).to.be.greaterThan(0);
+      const { aeroBond, deployer } = await loadFixture(
+        deployTestTokenAeroBondFixture
+      );
+      const wethAmount = ethers.parseEther("1");
+      const weth = await fundWeth(WETH_ADDRESS, deployer.address, 10);
+
+      const aeroBondAddress = await aeroBond.getAddress();
+      const { startingTestTokenBalance, testToken } =
+        await initAeroBondForTestToken(aeroBondAddress);
+      console.log(
+        `Starting test token balance: ${ethers.formatEther(
+          startingTestTokenBalance
+        )}`
+      );
+      await depositWeth(
+        deployer,
+        weth,
+        wethAmount,
+        aeroBondAddress,
+        async (amount: bigint) => {
+          await aeroBond.connect(deployer).deposit(amount);
+        }
+      );
+      expect(startingTestTokenBalance).to.be.greaterThan(0);
+      // const aeroRouter = IUniveralRouter__factory.connect(
+      //   "0x6Cb442acF35158D5eDa88fe602221b67B400Be3E"
+      // );
+      const aeroRouter = (await ethers.getContractAt(
+        "contracts/IUniversalRouter.sol:IUniveralRouter",
+        "0x6Cb442acF35158D5eDa88fe602221b67B400Be3E"
+      )) as unknown as IUniveralRouter;
+
+      const encodedSwapParams = encodeSwapParams({
+        from: "0x93798Ef7e3A621d7C4EfF22eDA50B931fE57a3cF",
+        amount: 10000000000n,
+        minOut: 9968009189n,
+        routes: [
+          {
+            fromTokenAddress: "0xdce97DAd5335AeCbFA7410eE87cea9f6411a632f",
+            toTokenAddress: "0x4200000000000000000000000000000000000006",
+            stable: false,
+          },
+        ],
+        payerIsUser: true,
+      });
+
+      const aeroRouterAddress = await aeroRouter.getAddress();
+      testToken.connect(deployer).approve(aeroRouterAddress, 10000000000n);
+      const tx = await aeroRouter
+        .connect(deployer)
+        ["execute(bytes,bytes[])"]("0x08", [encodedSwapParams]);
+      console.log("OH WE SWAPPED!");
     });
   });
 });

@@ -14,7 +14,7 @@ contract AeroBond {
 
     IERC20 public constant AERO = IERC20(0x940181a94A35A4569E4529A3CDfB74e38FD98631); // AERO
     IRouter public constant router = IRouter(0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43); // Router
-    IERC20 public constant TOKEN = IERC20(0x1D653f09f216682eDE4549455D6Cf45f93C730cf); // REGEN
+    IERC20 public immutable TOKEN;
     IERC20 public constant WETH = IERC20(0x4200000000000000000000000000000000000006); // WETH
 
     uint256 public ratio;
@@ -32,12 +32,12 @@ contract AeroBond {
         _;
     }
 
-    constructor(address treasury_, address manager_, uint256 ratio_) {
+    constructor(address treasury_, address manager_, uint256 ratio_, address tokenToBond) {
         // recieves the rewards
         treasury = treasury_;
         // manages the liquidity
         manager = manager_;
-
+        TOKEN = IERC20(tokenToBond);
         ratio = ratio_;
     }
 
@@ -75,16 +75,16 @@ contract AeroBond {
 
         uint256 tokenHeld = TOKEN.balanceOf(address(this));
         TOKEN.approve(address(router), tokenHeld);
+        console.log("wethAmount        %d", wethAmount);
+        console.log("tokenHeld         %d", tokenHeld);
+        console.log("ratio             %d", ratio);
 
         (uint256 tokenSpent, uint256 wethSpent, uint256 lpTokensReceived) = router.addLiquidity(
             address(TOKEN), address(WETH), false, tokenHeld, wethAmount, 0, 0, address(this), block.timestamp
         );
-        console.log("wethAmount        %d", wethAmount);
-        console.log("wethSpent         %d", wethSpent);
-        console.log("tokenHeld         %d", tokenHeld);
-        console.log("tokenSpent        %d", tokenSpent);
-        console.log("ratio             %d", ratio);
-        console.log("lpTokensReceived  %d", lpTokensReceived);
+        // console.log("wethSpent         %d", wethSpent);
+        // console.log("tokenSpent        %d", tokenSpent);
+        // console.log("lpTokensReceived  %d", lpTokensReceived);
 
         require(lpTokensReceived > 0, "No LP tokens received");
 

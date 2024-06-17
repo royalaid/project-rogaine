@@ -1,6 +1,11 @@
 import hre, { ethers } from "hardhat";
 import { IERC20, IWETH } from "../../typechain-types";
-import { REGEN_WHALE, REGEN_ADDRESS } from "./constants";
+import {
+  REGEN_WHALE,
+  REGEN_ADDRESS,
+  TEST_TOKEN_ADDRESS,
+  TEST_TOKEN_MINTER,
+} from "./constants";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 async function impersonateAccount(address: string) {
@@ -40,6 +45,30 @@ export async function initAeroBond(
   const startingRegenBalance = await regenContract.balanceOf(aeroBondAddress);
   await stopImpersonation(REGEN_WHALE);
   return { startingRegenBalance, regenContract };
+}
+
+export async function initAeroBondForTestToken(
+  aeroBondAddress: string,
+  tknAmount: number = 100
+) {
+  await impersonateAccount(TEST_TOKEN_MINTER);
+  const testToken = (await ethers.getContractAt(
+    "contracts/IERC20.sol:IERC20",
+    TEST_TOKEN_ADDRESS
+  )) as unknown as IERC20;
+  await impersonateAccount(TEST_TOKEN_MINTER);
+  await hre.network.provider.send("hardhat_setBalance", [
+    TEST_TOKEN_MINTER,
+    "0x3635C9ADC5DEA00000", // 1000 ETH in hexadecimal
+  ]);
+  const testTokenMinterSigner = await ethers.getSigner(TEST_TOKEN_MINTER);
+  await testToken
+    .connect(testTokenMinterSigner)
+    .mint(aeroBondAddress, ethers.parseEther(tknAmount.toString()));
+  const startingTestTokenBalance = await testToken.balanceOf(aeroBondAddress);
+  console.log(`Test token balance: ${startingTestTokenBalance}`);
+  await stopImpersonation(TEST_TOKEN_MINTER);
+  return { startingTestTokenBalance, testToken };
 }
 
 export async function fundWeth(
