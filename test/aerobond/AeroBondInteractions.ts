@@ -1,5 +1,5 @@
 import hre, { ethers } from "hardhat";
-import { IERC20, IWETH } from "../../typechain-types";
+import { IERC20, IUniveralRouter, IWETH } from "../../typechain-types";
 import {
   REGEN_WHALE,
   REGEN_ADDRESS,
@@ -7,6 +7,7 @@ import {
   TEST_TOKEN_MINTER,
 } from "./constants";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { encodeSwapParams } from "../utils/Router";
 
 async function impersonateAccount(address: string) {
   await hre.network.provider.request({
@@ -109,4 +110,46 @@ export async function depositWeth(
     );
   }
   await cb(amount);
+}
+
+export async function swap({
+  signer,
+  from,
+  to,
+  amount,
+  minOut,
+}: {
+  signer: HardhatEthersSigner;
+  from: IERC20 | IWETH;
+  to: IERC20;
+  amount: bigint;
+  minOut: bigint;
+}) {
+  const aeroRouter = (await ethers.getContractAt(
+    "contracts/IUniversalRouter.sol:IUniveralRouter",
+    "0x6Cb442acF35158D5eDa88fe602221b67B400Be3E"
+  )) as unknown as IUniveralRouter;
+  const fromAddress = await from.getAddress();
+  const toAddress = await to.getAddress();
+
+  const encodedSwapParams = encodeSwapParams({
+    from: signer.address,
+    amount: amount,
+    minOut: minOut,
+    routes: [
+      {
+        fromTokenAddress: fromAddress,
+        toTokenAddress: toAddress,
+        stable: false,
+      },
+    ],
+    payerIsUser: true,
+  });
+
+  const aeroRouterAddress = await aeroRouter.getAddress();
+  from.connect(signer).approve(aeroRouterAddress, amount);
+  const tx = await aeroRouter
+    .connect(signer)
+    ["execute(bytes,bytes[])"]("0x08", [encodedSwapParams]);
+  console.log("OH WE SWAPPED!");
 }

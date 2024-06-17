@@ -1,29 +1,15 @@
-import {
-  impersonateAccount,
-  loadFixture,
-} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
-import {
-  IERC20,
-  IUniveralRouter__factory,
-  IUniveralRouter,
-  IWETH,
-} from "../../typechain-types";
-import {
-  REGEN_ADDRESS,
-  REGEN_WHALE,
-  TEST_TOKEN_ADDRESS,
-  TEST_TOKEN_MINTER,
-  WETH_ADDRESS,
-} from "./constants";
+import { IERC20 } from "../../typechain-types";
+import { REGEN_ADDRESS, TEST_TOKEN_ADDRESS, WETH_ADDRESS } from "./constants";
 import {
   depositWeth,
   fundWeth,
   initAeroBond,
   initAeroBondForTestToken,
+  swap,
 } from "./AeroBondInteractions";
-import { encodeSwapParams } from "../utils/Router";
 
 function createAeroBondFixture(tokenAddress: string) {
   async function deployAeroBondFixture() {
@@ -233,31 +219,20 @@ describe("AeroBond", function () {
       // const aeroRouter = IUniveralRouter__factory.connect(
       //   "0x6Cb442acF35158D5eDa88fe602221b67B400Be3E"
       // );
-      const aeroRouter = (await ethers.getContractAt(
-        "contracts/IUniversalRouter.sol:IUniveralRouter",
-        "0x6Cb442acF35158D5eDa88fe602221b67B400Be3E"
-      )) as unknown as IUniveralRouter;
 
-      const encodedSwapParams = encodeSwapParams({
-        from: "0x93798Ef7e3A621d7C4EfF22eDA50B931fE57a3cF",
+      const testTokenBeforeSwap = await testToken.balanceOf(deployer);
+      const wethBeforeSwap = await weth.balanceOf(deployer);
+      await swap({
+        signer: deployer,
+        from: weth,
+        to: testToken,
         amount: 10000000000n,
         minOut: 9968009189n,
-        routes: [
-          {
-            fromTokenAddress: "0xdce97DAd5335AeCbFA7410eE87cea9f6411a632f",
-            toTokenAddress: "0x4200000000000000000000000000000000000006",
-            stable: false,
-          },
-        ],
-        payerIsUser: true,
       });
-
-      const aeroRouterAddress = await aeroRouter.getAddress();
-      testToken.connect(deployer).approve(aeroRouterAddress, 10000000000n);
-      const tx = await aeroRouter
-        .connect(deployer)
-        ["execute(bytes,bytes[])"]("0x08", [encodedSwapParams]);
-      console.log("OH WE SWAPPED!");
+      const testTokenAfterSwap = await testToken.balanceOf(deployer);
+      const wethAfterSwap = await weth.balanceOf(deployer);
+      expect(testTokenAfterSwap).to.be.greaterThan(testTokenBeforeSwap);
+      expect(wethAfterSwap).to.be.lessThan(wethBeforeSwap);
     });
   });
 });
