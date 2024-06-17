@@ -1,5 +1,6 @@
 require("dotenv").config();
 import { HardhatUserConfig } from "hardhat/config";
+import "hardhat-tracer";
 import "@nomicfoundation/hardhat-toolbox";
 
 const config: HardhatUserConfig = {
