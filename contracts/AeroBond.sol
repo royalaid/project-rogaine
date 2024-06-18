@@ -4,7 +4,6 @@ pragma solidity ^0.8.24;
 import "./IRouter.sol";
 import "./IERC20.sol";
 import "./IGauge.sol";
-import "hardhat/console.sol";
 
 contract AeroBond {
     address public manager;
@@ -75,24 +74,16 @@ contract AeroBond {
 
         uint256 tokenHeld = TOKEN.balanceOf(address(this));
         TOKEN.approve(address(router), tokenHeld);
-        console.log("wethAmount        %d", wethAmount);
-        console.log("tokenHeld         %d", tokenHeld);
-        console.log("ratio             %d", ratio);
 
         (uint256 tokenSpent, uint256 wethSpent, uint256 lpTokensReceived) = router.addLiquidity(
             address(TOKEN), address(WETH), false, tokenHeld, wethAmount, 0, 0, address(this), block.timestamp
         );
-        // console.log("wethSpent         %d", wethSpent);
-        // console.log("tokenSpent        %d", tokenSpent);
-        // console.log("lpTokensReceived  %d", lpTokensReceived);
 
         require(lpTokensReceived > 0, "No LP tokens received");
 
         WETH.transfer(msg.sender, (wethAmount - wethSpent));
 
         uint256 given = (tokenSpent * ratio) / TEN_THOUSAND;
-        console.log("ratio*tokenSpent  %d", ratio * tokenSpent);
-        console.log("given             %d", given);
 
         TOKEN.transfer(msg.sender, given);
 

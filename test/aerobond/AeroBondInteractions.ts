@@ -1,5 +1,12 @@
 import hre, { ethers } from "hardhat";
-import { IERC20, IUniveralRouter, IWETH } from "../../typechain-types";
+import {
+  IAeroPool,
+  IAeroPool__factory,
+  IERC20,
+  IRouter,
+  IUniveralRouter,
+  IWETH,
+} from "../../typechain-types";
 import {
   REGEN_WHALE,
   REGEN_ADDRESS,
@@ -8,6 +15,7 @@ import {
 } from "./constants";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { encodeSwapParams } from "../utils/Router";
+import { AddressLike, resolveAddress } from "ethers";
 
 async function impersonateAccount(address: string) {
   await hre.network.provider.request({
@@ -152,4 +160,75 @@ export async function swap({
     .connect(signer)
     ["execute(bytes,bytes[])"]("0x08", [encodedSwapParams]);
   console.log("OH WE SWAPPED!");
+}
+
+async function getSwapExpected(
+  deployerAeroRouter: IAeroPool,
+  { from, to }: { from: AddressLike; to: AddressLike }
+) {
+  const foo: IRouter.RouteStruct = {
+    factory: await deployerAeroRouter.defaultFactory(),
+    from: from,
+    to: to,
+    stable: false,
+  };
+  const swapExpected = await deployerAeroRouter.getAmountsOut(
+    ethers.parseEther("100"),
+    [foo]
+  );
+  return swapExpected;
+}
+
+async function getReserves(
+  deployerAeroRouter: IAeroPool,
+  {
+    from,
+    to,
+  }: {
+    from: AddressLike;
+    to: AddressLike;
+  }
+) {
+  const foo: IRouter.RouteStruct = {
+    factory: await deployerAeroRouter.defaultFactory(),
+    from: from,
+    to: to,
+    stable: false,
+  };
+  const reserves = await deployerAeroRouter.getReserves(
+    from,
+    to,
+    false,
+    foo.factory
+  );
+  return reserves;
+}
+
+export async function poolStats(
+  deployer: HardhatEthersSigner,
+  pool: AddressLike,
+  { from, to }: { from: AddressLike; to: AddressLike }
+) {
+  const aeroPool = IAeroPool__factory.connect(await resolveAddress(pool));
+  const deployerAeroRouter = aeroPool.connect(deployer);
+
+  const swapExpected = await getSwapExpected(deployerAeroRouter, {
+    from,
+    to,
+  });
+  const reserves = await getReserves(deployerAeroRouter, {
+    from,
+    to,
+  });
+
+  console.log("Expected swap:");
+  console.table({
+    WETH: ethers.formatEther(swapExpected[0]),
+    TEST_TOKEN: ethers.formatEther(swapExpected[1]),
+  });
+  console.log("Reserves:");
+  console.table({
+    WETH: ethers.formatEther(reserves[0]),
+    TEST_TOKEN: ethers.formatEther(reserves[1]),
+  });
 }

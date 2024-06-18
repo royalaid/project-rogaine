@@ -2,12 +2,18 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
 import { IERC20 } from "../../typechain-types";
-import { REGEN_ADDRESS, TEST_TOKEN_ADDRESS, WETH_ADDRESS } from "./constants";
+import {
+  REGEN_ADDRESS,
+  TEST_TOKEN_ADDRESS,
+  TEST_TOKEN_WETH_AERO_POOL_ADDRESS,
+  WETH_ADDRESS,
+} from "./constants";
 import {
   depositWeth,
   fundWeth,
   initAeroBond,
   initAeroBondForTestToken,
+  poolStats,
   swap,
 } from "./AeroBondInteractions";
 
@@ -233,6 +239,22 @@ describe("AeroBond", function () {
       const wethAfterSwap = await weth.balanceOf(deployer);
       expect(testTokenAfterSwap).to.be.greaterThan(testTokenBeforeSwap);
       expect(wethAfterSwap).to.be.lessThan(wethBeforeSwap);
+
+      console.log("Test Before/After Swap");
+      console.table({
+        TEST_TOKEN_BEFORE: ethers.formatEther(testTokenBeforeSwap),
+        TEST_TOKEN_AFTER: ethers.formatEther(testTokenAfterSwap),
+      });
+      console.log("WETH Before/After Swap");
+      console.table({
+        WETH_BEFORE: ethers.formatEther(wethBeforeSwap),
+        WETH_AFTER: ethers.formatEther(wethAfterSwap),
+      });
+
+      await poolStats(deployer, TEST_TOKEN_WETH_AERO_POOL_ADDRESS, {
+        from: WETH_ADDRESS,
+        to: TEST_TOKEN_ADDRESS,
+      });
     });
   });
 });
