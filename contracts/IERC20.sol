@@ -27,15 +27,13 @@ interface IERC20 {
     function totalSupply() external view returns (uint256);
 
     /**
-
      * @dev Returns the decimal points used by the token.
      */
     function decimals() external view returns (uint8);
 
     /**
-     
-    * @dev Returns the amount of tokens owned by `account`.
-    */
+     * @dev Returns the amount of tokens owned by `account`.
+     */
     function balanceOf(address account) external view returns (uint256);
 
     /**
@@ -81,22 +79,20 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool);
-    
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+
     /**
      * @dev Burns `amount` of token, shringking total supply
      */
-    function burn(uint amount) external;
+    function burn(uint256 amount) external;
 
     /**
      * @dev Mints `amount` of token to address `to` increasing total supply
      */
-    function mint(address to, uint amount) external;
+    function mint(address to, uint256 amount) external;
 
     //For testing
     function addMinter(address minter_) external;
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
 }

@@ -76,7 +76,7 @@ contract AeroBond {
         TOKEN.approve(address(router), tokenHeld);
 
         (uint256 tokenSpent, uint256 wethSpent, uint256 lpTokensReceived) = router.addLiquidity(
-            address(TOKEN), address(WETH), false, tokenHeld, wethAmount, 0, 0, address(this), block.timestamp
+            address(TOKEN), address(WETH), true, tokenHeld, wethAmount, 0, 0, address(this), block.timestamp
         );
 
         require(lpTokensReceived > 0, "No LP tokens received");
