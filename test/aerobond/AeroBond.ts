@@ -498,5 +498,123 @@ describe("AeroBond", function () {
         proposedSwapAmount: ethers.parseEther("10"),
       });
     });
+
+    it("should handle lopside liquidity", async function () {
+      const { aeroBond, deployer } = await loadFixture(
+        deployTestTokenAeroBondFixture
+      );
+      const wethAmount = ethers.parseEther("168");
+      const weth = await fundWeth(WETH_ADDRESS, deployer, 500);
+      const stable = true;
+
+      console.log(
+        `Deployer WETH balance: ${ethers.formatEther(
+          await weth.balanceOf(deployer.address)
+        )}`
+      );
+
+      const aeroBondAddress = await aeroBond.getAddress();
+      const { startingTestTokenBalance, testToken } =
+        await initAeroBondForTestToken(aeroBondAddress, 10_000);
+      console.log(
+        `Starting test token balance: ${ethers.formatEther(
+          startingTestTokenBalance
+        )}`
+      );
+      await depositWeth(
+        deployer,
+        weth,
+        wethAmount,
+        aeroBondAddress,
+        async (amount: bigint) => {
+          await aeroBond.connect(deployer).deposit(amount);
+        }
+      );
+      await poolStats(deployer, TEST_TOKEN_WETH_AERO_POOL_ADDRESS, {
+        from: WETH_ADDRESS,
+        to: TEST_TOKEN_ADDRESS,
+        stable,
+        logReserves: true,
+        logSwapExpected: true,
+        proposedSwapAmount: ethers.parseEther("10"),
+      });
+
+      await swap({
+        signer: deployer,
+        from: weth,
+        to: testToken,
+        amount: ethers.parseEther("100"),
+        minOut: 0n,
+        stable,
+        log: true,
+      });
+
+      await poolStats(deployer, TEST_TOKEN_WETH_AERO_POOL_ADDRESS, {
+        from: WETH_ADDRESS,
+        to: TEST_TOKEN_ADDRESS,
+        stable,
+        logReserves: true,
+        logSwapExpected: true,
+        proposedSwapAmount: ethers.parseEther("10"),
+      });
+
+      await swap({
+        signer: deployer,
+        from: testToken,
+        to: weth,
+        amount: ethers.parseEther("150"),
+        minOut: 0n,
+        stable,
+        log: true,
+      });
+
+      const { reserves } = await poolStats(
+        deployer,
+        TEST_TOKEN_WETH_AERO_POOL_ADDRESS,
+        {
+          from: WETH_ADDRESS,
+          to: TEST_TOKEN_ADDRESS,
+          stable,
+          logReserves: true,
+          logSwapExpected: true,
+          proposedSwapAmount: ethers.parseEther("10"),
+        }
+      );
+
+      console.log("==== Entering our Balance Era ====");
+      const xx = await calculateSwapAmount(
+        {
+          token: weth,
+          reserve: reserves.from,
+        },
+        {
+          token: testToken,
+          reserve: reserves.to,
+        }
+      );
+      console.log({
+        amt: ethers.formatEther(xx.amount),
+        token: await xx.tokenToSwap.symbol(),
+      });
+      console.log("==== Swapping ====");
+      await swap({
+        signer: deployer,
+        to: xx.tokenToSwap,
+        from: xx.tokenToReceive,
+        amount: xx.amount,
+        minOut: 0n,
+        stable,
+        log: true,
+      });
+      console.log("==== Exiting our Balance Era ====");
+      await poolStats(deployer, TEST_TOKEN_WETH_AERO_POOL_ADDRESS, {
+        proposedSwapAmount: ethers.parseEther("1"),
+        from: WETH_ADDRESS,
+        to: TEST_TOKEN_ADDRESS,
+        stable,
+        logReserves: true,
+        logSwapExpected: true,
+      });
+    });
   });
 });
