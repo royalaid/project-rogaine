@@ -82,13 +82,13 @@ export async function initAeroBondForTestToken(
 
 export async function fundWeth(
   wethAddress: string,
-  addressToReceive: string,
+  signerToReceive: HardhatEthersSigner,
   amount: number
 ) {
   const wethAmount = ethers.parseEther(amount.toString());
   // Fund the deployer with WETH
   await hre.network.provider.send("hardhat_setBalance", [
-    addressToReceive,
+    signerToReceive.address,
     "0x3635C9ADC5DEA00000", // 1000 ETH in hexadecimal
   ]);
 
@@ -97,7 +97,7 @@ export async function fundWeth(
     "contracts/IWETH.sol:IWETH",
     wethAddress
   )) as unknown as IWETH;
-  await weth.deposit({ value: wethAmount });
+  await weth.connect(signerToReceive).deposit({ value: wethAmount });
   return weth;
 }
 
@@ -170,7 +170,7 @@ export async function swap({
     .connect(signer)
     ["execute(bytes,bytes[])"]("0x08", [encodedSwapParams]);
   if (log) {
-    console.log(`OH WE SWAPPED ${fromTokenName} to ${toTokenName}`);
+    console.log(`Swapping ${fromTokenName} to ${toTokenName}`);
   }
 
   const fromTokenAfterSwap = await from.balanceOf(signer.address);

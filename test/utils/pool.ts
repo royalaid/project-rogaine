@@ -13,7 +13,11 @@ interface TokenReserve {
 export async function calculateSwapAmount(
   token1: TokenReserve,
   token2: TokenReserve
-): Promise<{ amount: bigint; tokenToSwap: IERC20 | IWETH }> {
+): Promise<{
+  amount: bigint;
+  tokenToSwap: IERC20 | IWETH;
+  tokenToReceive: IERC20 | IWETH;
+}> {
   const targetReserve = sqrt(token1.reserve * token2.reserve);
   const diff1 = token1.reserve - targetReserve;
   const diff2 = token2.reserve - targetReserve;
@@ -25,6 +29,10 @@ export async function calculateSwapAmount(
   });
 
   return diff1 > 0n
-    ? { amount: diff1, tokenToSwap: token1.token }
-    : { amount: diff2, tokenToSwap: token2.token };
+    ? { amount: diff1, tokenToSwap: token1.token, tokenToReceive: token2.token }
+    : {
+        amount: diff2,
+        tokenToSwap: token2.token,
+        tokenToReceive: token1.token,
+      };
 }

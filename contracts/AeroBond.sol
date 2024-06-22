@@ -14,6 +14,7 @@ contract AeroBond {
     IERC20 public constant AERO = IERC20(0x940181a94A35A4569E4529A3CDfB74e38FD98631); // AERO
     IRouter public constant router = IRouter(0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43); // Router
     IERC20 public immutable TOKEN;
+    bool public immutable STABLE;
     IERC20 public constant WETH = IERC20(0x4200000000000000000000000000000000000006); // WETH
 
     uint256 public ratio;
@@ -31,12 +32,13 @@ contract AeroBond {
         _;
     }
 
-    constructor(address treasury_, address manager_, uint256 ratio_, address tokenToBond) {
+    constructor(address treasury_, address manager_, uint256 ratio_, address tokenToBond, bool stable_) {
         // recieves the rewards
         treasury = treasury_;
         // manages the liquidity
         manager = manager_;
         TOKEN = IERC20(tokenToBond);
+        STABLE = stable_;
         ratio = ratio_;
     }
 
@@ -76,7 +78,7 @@ contract AeroBond {
         TOKEN.approve(address(router), tokenHeld);
 
         (uint256 tokenSpent, uint256 wethSpent, uint256 lpTokensReceived) = router.addLiquidity(
-            address(TOKEN), address(WETH), true, tokenHeld, wethAmount, 0, 0, address(this), block.timestamp
+            address(TOKEN), address(WETH), STABLE, tokenHeld, wethAmount, 0, 0, address(this), block.timestamp
         );
 
         require(lpTokensReceived > 0, "No LP tokens received");
@@ -99,7 +101,7 @@ contract AeroBond {
 
         LP_TOKEN.approve(address(router), ownedLiquidity);
         (uint256 amountWETH, uint256 amountToken) = router.removeLiquidity(
-            address(WETH), address(TOKEN), false, ownedLiquidity, 0, 0, address(this), block.timestamp
+            address(WETH), address(TOKEN), STABLE, ownedLiquidity, 0, 0, address(this), block.timestamp
         );
         return (amountWETH, amountToken);
     }
