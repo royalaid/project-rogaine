@@ -14,9 +14,10 @@ import {
   initAeroBond,
   initAeroBondForTestToken,
   poolStats,
-  swap,
 } from "./AeroBondInteractions";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+import { swap } from "../utils/trading";
+
 import { calculateSwapAmount } from "../utils/pool";
 
 function createAeroBondFixture(tokenAddress: string, stable: boolean) {
