@@ -9,8 +9,32 @@ import {
 import { encodeSwapParams } from "./Router";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { AddressLike } from "ethers";
+import {
+  TEST_TOKEN_WETH_AERO_POOL_ADDRESS,
+  percentFormatter,
+} from "../aerobond/constants";
+import { poolStats } from "../aerobond/AeroBondInteractions";
+import path from "path";
 
-const percentFormatter = (num: number) => `${(num * 100).toFixed(2)}%`;
+const swapRecords: {
+  from: AddressLike;
+  fromAmt: bigint;
+  fromReserves: bigint;
+  to: AddressLike;
+  toAmt: bigint;
+  toReserves: bigint;
+  slippage: number;
+  file: string;
+  line: number;
+  isRebalance: boolean;
+  testName: string;
+}[] = [];
+
+export const getSwapRecords = () => swapRecords;
+
+export function initSwapRecords() {
+  swapRecords.length = 0;
+}
 
 export async function getSwapExpected(
   deployerAeroRouter: IAeroPool,
@@ -62,6 +86,8 @@ export async function swap({
   minOut,
   stable,
   log = false,
+  isRebalance = false,
+  testName,
 }: {
   signer: HardhatEthersSigner;
   from: IERC20 | IWETH;
@@ -70,6 +96,8 @@ export async function swap({
   minOut: bigint;
   stable: boolean;
   log: boolean;
+  isRebalance: boolean;
+  testName: string;
 }) {
   const aeroRouter = (await ethers.getContractAt(
     "contracts/IUniversalRouter.sol:IUniveralRouter",
@@ -97,6 +125,19 @@ export async function swap({
     payerIsUser: true,
   });
 
+  const { reserves } = await poolStats(
+    signer,
+    TEST_TOKEN_WETH_AERO_POOL_ADDRESS,
+    {
+      from: fromAddress,
+      to: toAddress,
+      stable,
+      logReserves: false,
+      logSwapExpected: false,
+      proposedSwapAmount: ethers.parseEther("10"),
+    }
+  );
+
   const aeroRouterAddress = await aeroRouter.getAddress();
   from.connect(signer).approve(aeroRouterAddress, amount);
   const tx = await aeroRouter
@@ -108,6 +149,30 @@ export async function swap({
 
   const fromTokenAfterSwap = await from.balanceOf(signer.address);
   const toTokenAfterSwap = await to.balanceOf(signer.address);
+
+  const stack = new Error().stack;
+  const stackLine = stack?.split("\n")[2]; // Adjust the index if necessary
+  const match = stackLine?.match(/\((.*):(\d+):\d+\)/);
+  const fullPath = match ? match[1] : "unknown";
+  const file = path.basename(fullPath);
+  const line = match ? parseInt(match[2], 10) : -1;
+
+  swapRecords.push({
+    file,
+    line,
+    from: fromAddress,
+    fromAmt: amount,
+    fromReserves: reserves.from,
+    to: toAddress,
+    toAmt: toTokenAfterSwap - toTokenBeforeSwap,
+    toReserves: reserves.to,
+    slippage:
+      Number(ethers.formatEther(toTokenAfterSwap - toTokenBeforeSwap)) /
+        Number(ethers.formatEther(amount)) -
+      1,
+    testName,
+    isRebalance,
+  });
 
   if (log) {
     console.log(`${fromTokenName} Before/After Swap`);

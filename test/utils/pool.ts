@@ -21,12 +21,12 @@ export async function calculateSwapAmount(
   const targetReserve = sqrt(token1.reserve * token2.reserve);
   const diff1 = token1.reserve - targetReserve;
   const diff2 = token2.reserve - targetReserve;
-  console.log({
-    diff1: ethers.formatEther(diff1),
-    token1: await token1.token.symbol(),
-    diff2: ethers.formatEther(diff2),
-    token2: await token2.token.symbol(),
-  });
+  // console.log({
+  //   diff1: ethers.formatEther(diff1),
+  //   token1: await token1.token.symbol(),
+  //   diff2: ethers.formatEther(diff2),
+  //   token2: await token2.token.symbol(),
+  // });
 
   return diff1 > 0n
     ? { amount: diff1, tokenToSwap: token1.token, tokenToReceive: token2.token }
