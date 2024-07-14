@@ -29,6 +29,7 @@ import { Pool, Position, nearestUsableTick } from "@uniswap/v3-sdk";
 import { Token } from "@uniswap/sdk-core";
 import { impersonateAccount } from "@nomicfoundation/hardhat-network-helpers";
 import { stopImpersonation } from "../utils/hardhat";
+import { fundWeth } from "../utils/token";
 
 export async function fundMeth(addressToFund: string, amount: number) {
   const methContract = (await ethers.getContractAt("contracts/IERC20.sol:IERC20", M_ETH_ADDRESS)) as unknown as IERC20;
@@ -53,13 +54,12 @@ export async function initAeroBondForMethToken(aeroBondAddress: string, tknAmoun
 }
 
 export async function initNftLiquidityPosition(signer: HardhatEthersSigner, poolAddress: string, tknAmount: number = 100) {
-  const wethContract = (await ethers.getContractAt("contracts/IERC20.sol:IERC20", WETH_ADDRESS)) as unknown as IERC20;
-  const methContract = (await ethers.getContractAt("contracts/IERC20.sol:IERC20", M_ETH_ADDRESS)) as unknown as IERC20;
+  const wethContract = (await ethers.getContractAt("contracts/IERC20.sol:IERC20", WETH_ADDRESS)).connect(signer) as unknown as IERC20;
+  const methContract = (await ethers.getContractAt("contracts/IERC20.sol:IERC20", M_ETH_ADDRESS)).connect(signer) as unknown as IERC20;
 
-  const nftPosManager = (await ethers.getContractAt(
-    "contracts/INFPositionManager.sol:INFPostionManager",
-    AERO_NFT_POS_MANAGER_ADDRESS
-  )) as unknown as INFPostionManager;
+  const nftPosManager = (
+    await ethers.getContractAt("contracts/INFPositionManager.sol:INFPostionManager", AERO_NFT_POS_MANAGER_ADDRESS)
+  ).connect(signer) as unknown as INFPostionManager;
 
   const sugarContract = (await ethers.getContractAt(
     "contracts/IAeroSugarHelper.sol:IAeroSugarHelper",
@@ -67,16 +67,12 @@ export async function initNftLiquidityPosition(signer: HardhatEthersSigner, pool
   )) as unknown as IAeroSugarHelper;
 
   const clAeroPool = (await ethers.getContractAt("contracts/ICLPool.sol:ICLPool", poolAddress)) as unknown as ICLPool;
+  const startingPoolWethBalance = await wethContract.balanceOf(poolAddress);
+  const startingPoolMethBalance = await methContract.balanceOf(poolAddress);
+
   const slot0 = await clAeroPool.slot0();
   const sqrtPriceX96 = slot0.sqrtPriceX96;
   const liquidity = await clAeroPool.liquidity();
-  const Q96 = 2n ** 96n;
-  const reserve0 = (liquidity * Q96) / sqrtPriceX96;
-  const reserve1 = (liquidity * sqrtPriceX96) / Q96;
-
-  const amount0 = reserve0 / Q96;
-  const amount1 = reserve1 / Q96;
-  console.table({ reserve0, reserve1, amount0, amount1, Q96, sqrtPriceX96, liquidity });
 
   const tick = await sugarContract.getTickAtSqrtRatio(slot0.sqrtPriceX96);
   const tickLower = tick - 1n;
@@ -112,35 +108,41 @@ export async function initNftLiquidityPosition(signer: HardhatEthersSigner, pool
     amount0Min: 0n,
     amount1Min: 0n,
     tickSpacing: 1,
-    tickLower: -2,
-    tickUpper: 2,
+    tickLower: -1,
+    tickUpper: 1,
     recipient: signer.address,
     deadline: Date.now() + 1000000,
     sqrtPriceX96: 0n,
   };
   console.table(params);
 
-  await wethContract.connect(signer).approve(AERO_NFT_POS_MANAGER_ADDRESS, ethers.parseEther("1"));
-  await methContract.connect(signer).approve(AERO_NFT_POS_MANAGER_ADDRESS, ethers.parseEther("1"));
+  await wethContract.approve(AERO_NFT_POS_MANAGER_ADDRESS, ethers.parseEther("1"));
+  await methContract.approve(AERO_NFT_POS_MANAGER_ADDRESS, ethers.parseEther("1"));
 
-  await nftPosManager.connect(signer).mint(params);
+  await nftPosManager.mint(params);
+  const posId = await nftPosManager.tokenOfOwnerByIndex(signer.address, 0);
+  const pos = await nftPosManager.positions(posId);
+  console.table({
+    token0: pos.token0,
+    token1: pos.token1,
+    liquidity: pos.liquidity,
+  });
+  const newPoolWethBalance = await wethContract.balanceOf(poolAddress);
+  const newPoolMethBalance = await methContract.balanceOf(poolAddress);
+  console.table({
+    startingPoolWethBalance,
+    newPoolWethBalance,
+    startingPoolMethBalance,
+    newPoolMethBalance,
+  });
 
   const newLiquidity = await clAeroPool.liquidity();
-  console.log(`New liquidity: ${ethers.formatEther(newLiquidity)}`);
-}
+  const newSqrtPriceX96 = (await clAeroPool.slot0()).sqrtPriceX96;
 
-export async function fundWeth(wethAddress: string, signerToReceive: HardhatEthersSigner, amount: number) {
-  const wethAmount = ethers.parseEther(amount.toString());
-  // Fund the deployer with WETH
-  await hre.network.provider.send("hardhat_setBalance", [
-    signerToReceive.address,
-    "0x3635C9ADC5DEA00000", // 1000 ETH in hexadecimal
-  ]);
-
-  // Approve the AeroBond contract to spend WETH
-  const weth = (await ethers.getContractAt("contracts/IWETH.sol:IWETH", wethAddress)) as unknown as IWETH;
-  await weth.connect(signerToReceive).deposit({ value: wethAmount });
-  return weth;
+  console.log(`Old liquidity: ${liquidity}`);
+  console.log(`New liquidity: ${newLiquidity}`);
+  console.log(`Old sqrtPriceX96: ${sqrtPriceX96}`);
+  console.log(`New sqrtPriceX96: ${newSqrtPriceX96}`);
 }
 
 export async function depositWeth(
@@ -159,80 +161,4 @@ export async function depositWeth(
     console.log(`Depositing ${ethers.formatEther(amount)} WETH to ${targetAddress}`);
   }
   await cb(amount);
-}
-
-async function getReserves(
-  deployerAeroRouter: IAeroPool,
-  {
-    from,
-    to,
-    stable,
-    log = false,
-  }: {
-    from: AddressLike;
-    to: AddressLike;
-    stable: boolean;
-    log?: boolean;
-  }
-) {
-  const foo: IRouter.RouteStruct = {
-    factory: await deployerAeroRouter.defaultFactory(),
-    from: from,
-    to: to,
-    stable: stable,
-  };
-  const reserves = await deployerAeroRouter.getReserves(from, to, stable, foo.factory);
-  if (log) {
-    console.log("Reserves:");
-    console.table({
-      WETH: ethers.formatEther(reserves[0]),
-      TEST_TOKEN: ethers.formatEther(reserves[1]),
-    });
-  }
-  return {
-    from: reserves[0],
-    to: reserves[1],
-  };
-}
-
-export async function poolStats(
-  deployer: HardhatEthersSigner,
-  pool: AddressLike,
-  {
-    from,
-    to,
-    stable,
-    proposedSwapAmount,
-    logReserves = false,
-    logSwapExpected = false,
-  }: {
-    from: AddressLike;
-    to: AddressLike;
-    stable: boolean;
-    proposedSwapAmount: bigint;
-    logReserves?: boolean;
-    logSwapExpected?: boolean;
-  }
-) {
-  const aeroPool = IAeroPool__factory.connect(await resolveAddress(pool));
-  const deployerAeroRouter = aeroPool.connect(deployer);
-
-  const swapExpected = await getSwapExpected(deployerAeroRouter, {
-    from,
-    to,
-    stable,
-    amount: proposedSwapAmount,
-    log: logSwapExpected,
-  });
-  const reserves = await getReserves(deployerAeroRouter, {
-    from,
-    to,
-    stable,
-    log: logReserves,
-  });
-
-  return {
-    swapExpected,
-    reserves,
-  };
 }
