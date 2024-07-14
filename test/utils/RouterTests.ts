@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { encodeSwapParams } from "./Router";
+import { encodeV2SwapParams } from "./Router";
 
 const abiCoder = ethers.AbiCoder.defaultAbiCoder();
 
 describe("Router", () => {
   it("should correctly encode swap params", () => {
-    const encodedSwapParams = encodeSwapParams({
+    const encodedSwapParams = encodeV2SwapParams({
       from: "0x93798Ef7e3A621d7C4EfF22eDA50B931fE57a3cF",
       amount: 10000000000n,
       minOut: 9968009189n,

@@ -22,7 +22,7 @@ import {
   AERO_SUGAR_HELPER_ADDRESS,
 } from "./constants";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { getSwapExpected } from "../utils/trading";
+import { getSwapExpected, swap } from "../utils/trading";
 import { AddressLike, resolveAddress } from "ethers";
 import { calculatePriceFromSqrtPriceX96, calculateSqrtPriceX96 } from "../utils/bigintMath";
 import { Pool, Position, nearestUsableTick } from "@uniswap/v3-sdk";
@@ -72,6 +72,7 @@ export async function initNftLiquidityPosition(signer: HardhatEthersSigner, pool
 
   const slot0 = await clAeroPool.slot0();
   const sqrtPriceX96 = slot0.sqrtPriceX96;
+  const fee = await clAeroPool.fee();
   const liquidity = await clAeroPool.liquidity();
 
   const tick = await sugarContract.getTickAtSqrtRatio(slot0.sqrtPriceX96);
@@ -143,6 +144,19 @@ export async function initNftLiquidityPosition(signer: HardhatEthersSigner, pool
   console.log(`New liquidity: ${newLiquidity}`);
   console.log(`Old sqrtPriceX96: ${sqrtPriceX96}`);
   console.log(`New sqrtPriceX96: ${newSqrtPriceX96}`);
+
+  await swap({
+    signer,
+    amountIn: ethers.parseEther("0.01"),
+    paths: [WETH_ADDRESS, Number(fee), M_ETH_ADDRESS],
+    recipient: signer.address,
+    amountOutMin: 0n,
+    payerIsUser: true,
+    log: true,
+    isRebalance: false,
+    testName: "initNftLiquidityPosition",
+    isV3: true,
+  });
 }
 
 export async function depositWeth(

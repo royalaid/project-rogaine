@@ -7,7 +7,8 @@ import { initAeroBondForTestToken, poolStats } from "./AeroBondInteractions";
 import { getSwapRecords, swap } from "../utils/trading";
 
 import { calculateSwapAmount } from "../utils/pool";
-import { fundWeth, depositWeth } from "./QethCLInteractions";
+import { depositWeth } from "./QethCLInteractions";
+import { fundWeth } from "../utils/token";
 
 async function deployAeroBondFixture() {
   const [deployer, buyer] = await ethers.getSigners();
@@ -388,8 +389,8 @@ describe("AeroBond", function () {
           fromAmt: Number(ethers.formatEther(fromAmt)).toFixed(2),
           to: addressToTokenName.get(to),
           toAmt: Number(ethers.formatEther(toAmt)).toFixed(2),
-          fromReserves: Number(ethers.formatEther(fromReserves)).toFixed(2),
-          toReserves: Number(ethers.formatEther(toReserves)).toFixed(2),
+          // fromReserves: Number(ethers.formatEther(fromReserves)).toFixed(2),
+          // toReserves: Number(ethers.formatEther(toReserves)).toFixed(2),
           slippage: percentFormatter(slippage),
           rebal: isRebalance ? "✅" : "❌",
           testName,

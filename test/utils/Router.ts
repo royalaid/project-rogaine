@@ -8,7 +8,28 @@ export type Route = {
   stable: boolean;
 };
 
-export function encodeSwapParams({
+export function encodeV3SwapParams({
+  recipient,
+  amountIn,
+  amountOutMinimum,
+  path,
+  payerIsUser,
+}: {
+  recipient: string;
+  amountIn: bigint;
+  amountOutMinimum: bigint;
+  path: [string, number, string];
+  payerIsUser: boolean;
+}) {
+  const encodedPath = abiCoder.encode(["address", "uint24", "address"], path);
+  const encodedArgs = abiCoder.encode(
+    ["address", "uint256", "uint256", "bytes", "bool"],
+    [recipient, amountIn, amountOutMinimum, encodedPath, payerIsUser]
+  );
+  return encodedArgs;
+}
+
+export function encodeV2SwapParams({
   from,
   amount,
   minOut,
@@ -27,11 +48,7 @@ export function encodeSwapParams({
       from,
       amount,
       minOut,
-      routes.map(({ fromTokenAddress, toTokenAddress, stable }) => [
-        fromTokenAddress,
-        toTokenAddress,
-        stable,
-      ]),
+      routes.map(({ fromTokenAddress, toTokenAddress, stable }) => [fromTokenAddress, toTokenAddress, stable]),
       payerIsUser,
     ]
   );
