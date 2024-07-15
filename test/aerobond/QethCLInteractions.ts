@@ -142,13 +142,19 @@ export async function initNftLiquidityPosition(signer: HardhatEthersSigner, pool
 
   console.log(`Old liquidity: ${liquidity}`);
   console.log(`New liquidity: ${newLiquidity}`);
+
   console.log(`Old sqrtPriceX96: ${sqrtPriceX96}`);
   console.log(`New sqrtPriceX96: ${newSqrtPriceX96}`);
+  console.log("Self Address", signer.address);
 
+  await wethContract.approve(clAeroPool.getAddress(), ethers.parseEther("1"));
+  await methContract.approve(clAeroPool.getAddress(), ethers.parseEther("1"));
+  const calcedSqrtPriceX96 = await sugarContract.getSqrtRatioAtTick(1);
+  // await clAeroPool.swap(signer.address, false, ethers.parseEther("0.01"), calcedSqrtPriceX96, "0x0000000000000000000000000000000000000000");
   await swap({
     signer,
     amountIn: ethers.parseEther("0.01"),
-    paths: [WETH_ADDRESS, Number(fee), M_ETH_ADDRESS],
+    paths: [WETH_ADDRESS, Number(fee) / 100, M_ETH_ADDRESS],
     recipient: signer.address,
     amountOutMin: 0n,
     payerIsUser: true,

@@ -138,12 +138,7 @@ export async function swapV3({ signer, amountIn, paths, log = false, testName, i
   // });
 
   const aeroRouterAddress = await aeroRouter.getAddress();
-  typeof from === "string"
-    ? await signer.sendTransaction({
-        to: fromAddress,
-        value: amountIn,
-      })
-    : await from.connect(signer).approve(aeroRouterAddress, amountIn);
+  await from.connect(signer).approve(aeroRouterAddress, amountIn);
   const tx = await aeroRouter.connect(signer)["execute(bytes,bytes[])"]("0x00", [encodedSwapParams]);
   if (log) {
     console.log(`Swapping ${fromTokenName} to ${toTokenName}`);
