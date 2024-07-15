@@ -44,8 +44,6 @@ export function encodeV3SwapParams({
     ["address", "uint256", "uint256", "bytes", "bool"],
     [recipient, amountIn, amountOutMinimum, encodedPath, payerIsUser]
   );
-  console.log("encodedPath", encodedPath);
-  console.log("encodedArgs", encodedArgs);
   return encodedArgs;
 }
 

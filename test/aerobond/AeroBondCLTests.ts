@@ -1,8 +1,10 @@
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
-import { M_ETH_ADDRESS, WETH_M_ETH_CL_POOL_ADDRESS } from "./constants";
+import { M_ETH_ADDRESS, WETH_ADDRESS, WETH_M_ETH_CL_POOL_ADDRESS } from "./constants";
 import { initAeroBondForMethToken, initNftLiquidityPosition } from "./QethCLInteractions";
+import { swap } from "../utils/trading";
+import { IERC20, IWETH } from "../../typechain-types";
 
 async function deployAeroBondFixture() {
   const [deployer, buyer] = await ethers.getSigners();
@@ -47,8 +49,27 @@ describe("AeroBond", function () {
   describe("mEthToken", function () {
     it("should init and mint position", async function () {
       const { deployer, aeroBond } = await loadFixture(deployAeroBondFixture);
+      const wethContract = (await ethers.getContractAt("contracts/IERC20.sol:IERC20", WETH_ADDRESS)).connect(deployer) as unknown as IWETH;
+      const methContract = (await ethers.getContractAt("contracts/IERC20.sol:IERC20", M_ETH_ADDRESS)).connect(
+        deployer
+      ) as unknown as IERC20;
       await initAeroBondForMethToken(await aeroBond.getAddress());
       await initNftLiquidityPosition(deployer, WETH_M_ETH_CL_POOL_ADDRESS);
+
+      await wethContract.approve(WETH_M_ETH_CL_POOL_ADDRESS, ethers.parseEther("1"));
+      await methContract.approve(WETH_M_ETH_CL_POOL_ADDRESS, ethers.parseEther("1"));
+      await swap({
+        signer: deployer,
+        amountIn: ethers.parseEther("0.85"),
+        paths: [WETH_ADDRESS, 1, M_ETH_ADDRESS],
+        recipient: deployer.address,
+        amountOutMin: 0n,
+        payerIsUser: true,
+        log: true,
+        isRebalance: false,
+        testName: "initNftLiquidityPosition",
+        isV3: true,
+      });
     });
   });
 });
