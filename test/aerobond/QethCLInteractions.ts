@@ -78,25 +78,6 @@ export async function initNftLiquidityPosition(signer: HardhatEthersSigner, pool
   const tick = await sugarContract.getTickAtSqrtRatio(slot0.sqrtPriceX96);
   const tickLower = tick - 1n;
   const tickUpper = tick + 1n;
-  const amount0Desired = ethers.parseEther("0.000438774693477425");
-  const amount1Desired = amount0Desired;
-
-  // console.table({ liquidity, tick, tickLower, tickUpper, amount0Desired, amount1Desired });
-
-  //calculate tick for 1:1 ratio
-
-  // console.log({ price: calculatePriceFromSqrtPriceX96(new Decimal(slot0.sqrtPriceX96.toString())) });
-  // const half = new Decimal(slot0.sqrtPriceX96.toString()).div(new Decimal(2).sqrt());
-  // console.log({ price: calculatePriceFromSqrtPriceX96(half) });
-  // console.log({
-  //   bigIntDiv: slot0.sqrtPriceX96 / 2n,
-  //   rawDec: new Decimal(slot0.sqrtPriceX96.toString()),
-  //   rawDiv: new Decimal(slot0.sqrtPriceX96.toString()).div(new Decimal(2).sqrt()),
-  //   half: half,
-  //   sugarTick: await sugarContract.getTickAtSqrtRatio(half.toFixed(0)),
-  // });
-
-  // sugarContract.getAmountsForLiquidity();
 
   await fundWeth(WETH_ADDRESS, signer, 100);
   await fundMeth(signer.address, 100);
@@ -104,8 +85,8 @@ export async function initNftLiquidityPosition(signer: HardhatEthersSigner, pool
   const params: MintParamsStruct = {
     token0: WETH_ADDRESS,
     token1: M_ETH_ADDRESS,
-    amount0Desired: ethers.parseEther("1"),
-    amount1Desired: ethers.parseEther("1"),
+    amount0Desired: ethers.parseEther(tknAmount.toString()),
+    amount1Desired: ethers.parseEther(tknAmount.toString()),
     amount0Min: 0n,
     amount1Min: 0n,
     tickSpacing: 1,
@@ -117,8 +98,8 @@ export async function initNftLiquidityPosition(signer: HardhatEthersSigner, pool
   };
   console.table(params);
 
-  await wethContract.approve(AERO_NFT_POS_MANAGER_ADDRESS, ethers.parseEther("1"));
-  await methContract.approve(AERO_NFT_POS_MANAGER_ADDRESS, ethers.parseEther("1"));
+  await wethContract.approve(AERO_NFT_POS_MANAGER_ADDRESS, ethers.parseEther(tknAmount.toString()));
+  await methContract.approve(AERO_NFT_POS_MANAGER_ADDRESS, ethers.parseEther(tknAmount.toString()));
 
   await nftPosManager.mint(params);
   const posId = await nftPosManager.tokenOfOwnerByIndex(signer.address, 0);

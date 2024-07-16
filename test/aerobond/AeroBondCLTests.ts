@@ -4,7 +4,48 @@ import hre, { ethers } from "hardhat";
 import { M_ETH_ADDRESS, WETH_ADDRESS, WETH_M_ETH_CL_POOL_ADDRESS } from "./constants";
 import { initAeroBondForMethToken, initNftLiquidityPosition } from "./QethCLInteractions";
 import { swap } from "../utils/trading";
-import { IERC20, IWETH } from "../../typechain-types";
+import { IERC20, IQuoter, IWETH } from "../../typechain-types";
+import { IQuoterV2 } from "../../typechain-types/contracts/IQuoter";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+async function getQuote(
+  signer: HardhatEthersSigner,
+  {
+    amountIn,
+    sqrtPriceLimitX96 = 0n,
+    tokenIn,
+    tokenOut,
+    tickSpacing = 1,
+  }: {
+    amountIn: bigint;
+    sqrtPriceLimitX96?: bigint;
+    tokenIn: string;
+    tokenOut: string;
+    tickSpacing?: number;
+  }
+) {
+  const quoterContract = (
+    await ethers.getContractAt("contracts/IQuoter.sol:IQuoter", "0x254cF9E1E6e233aa1AC962CB9B05b2cfeAaE15b0")
+  ).connect(signer) as unknown as IQuoter;
+
+  type QuoteExactInputSingleParamsStruct = IQuoterV2.QuoteExactInputSingleParamsStruct;
+  const params: QuoteExactInputSingleParamsStruct = {
+    tokenIn,
+    tokenOut,
+    tickSpacing,
+    amountIn,
+    sqrtPriceLimitX96,
+  };
+
+  const quote = await quoterContract.quoteExactInputSingle.staticCall(params, {});
+  console.table({
+    amountIn,
+    sqrtPriceX96After: quote.sqrtPriceX96After,
+    amountOut: quote.amountOut,
+    initializedTicksCrossed: quote.initializedTicksCrossed,
+    gasEstimate: quote.gasEstimate,
+  });
+}
 
 async function deployAeroBondFixture() {
   const [deployer, buyer] = await ethers.getSigners();
@@ -54,22 +95,31 @@ describe("AeroBond", function () {
         deployer
       ) as unknown as IERC20;
       await initAeroBondForMethToken(await aeroBond.getAddress());
-      await initNftLiquidityPosition(deployer, WETH_M_ETH_CL_POOL_ADDRESS);
+      await initNftLiquidityPosition(deployer, WETH_M_ETH_CL_POOL_ADDRESS, 10);
 
-      await wethContract.approve(WETH_M_ETH_CL_POOL_ADDRESS, ethers.parseEther("1"));
-      await methContract.approve(WETH_M_ETH_CL_POOL_ADDRESS, ethers.parseEther("1"));
-      await swap({
-        signer: deployer,
-        amountIn: ethers.parseEther("0.85"),
-        paths: [WETH_ADDRESS, 1, M_ETH_ADDRESS],
-        recipient: deployer.address,
-        amountOutMin: 0n,
-        payerIsUser: true,
-        log: true,
-        isRebalance: false,
-        testName: "initNftLiquidityPosition",
-        isV3: true,
-      });
-    });
+      await wethContract.approve(WETH_M_ETH_CL_POOL_ADDRESS, ethers.parseEther("10"));
+      await methContract.approve(WETH_M_ETH_CL_POOL_ADDRESS, ethers.parseEther("10"));
+
+      for (const amountIn of ["8", "8.1", "8.18", "8.2"]) {
+        await getQuote(deployer, {
+          amountIn: ethers.parseEther(amountIn),
+          tokenIn: WETH_ADDRESS,
+          tokenOut: M_ETH_ADDRESS,
+        });
+      }
+
+      // await swap({
+      //   signer: deployer,
+      //   amountIn: ethers.parseEther("8.2"),
+      //   paths: [WETH_ADDRESS, 1, M_ETH_ADDRESS],
+      //   recipient: deployer.address,
+      //   amountOutMin: 0n,
+      //   payerIsUser: true,
+      //   log: true,
+      //   isRebalance: false,
+      //   testName: "initNftLiquidityPosition",
+      //   isV3: true,
+      // });
+    }).timeout(1000000);
   });
 });

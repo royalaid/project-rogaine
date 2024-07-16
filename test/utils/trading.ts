@@ -173,6 +173,7 @@ export async function swapV3({ signer, amountIn, paths, log = false, testName, i
     console.table({
       Before: ethers.formatEther(fromTokenBeforeSwap),
       After: ethers.formatEther(fromTokenAfterSwap),
+      Diff: ethers.formatEther(fromTokenAfterSwap - fromTokenBeforeSwap),
     });
   }
 
@@ -181,6 +182,7 @@ export async function swapV3({ signer, amountIn, paths, log = false, testName, i
     console.table({
       Before: ethers.formatEther(toTokenBeforeSwap),
       After: ethers.formatEther(toTokenAfterSwap),
+      Diff: ethers.formatEther(toTokenAfterSwap - toTokenBeforeSwap),
     });
   }
 }
@@ -262,6 +264,7 @@ export async function swapV2({ signer, from, to, amount, minOut, stable, log = f
     console.table({
       Before: ethers.formatEther(fromTokenBeforeSwap),
       After: ethers.formatEther(fromTokenAfterSwap),
+      Diff: ethers.formatEther(fromTokenAfterSwap - fromTokenBeforeSwap),
     });
   }
 
@@ -270,6 +273,7 @@ export async function swapV2({ signer, from, to, amount, minOut, stable, log = f
     console.table({
       Before: ethers.formatEther(toTokenBeforeSwap),
       After: ethers.formatEther(toTokenAfterSwap),
+      Diff: ethers.formatEther(toTokenAfterSwap - toTokenBeforeSwap),
     });
   }
 }
